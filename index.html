@@ -51,8 +51,10 @@ button{font-family:inherit}
 /* ── top bar ── */
 .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:14px 0 12px;padding-top:calc(14px + env(safe-area-inset-top));
-  background:linear-gradient(180deg, rgba(255,249,247,.99) 58%, rgba(255,249,247,.92) 84%, rgba(255,249,247,0));
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  background:#FFF9F7;
+  background-image:linear-gradient(180deg,#FFF6F0 0%,#FFF9F7 74%,#FFF9F7 100%);
+  transition:box-shadow .18s ease}
+.topbar.stuck{box-shadow:0 6px 16px rgba(160,124,86,.10)}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .brand-mark{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:21px;flex:0 0 auto;
   background:linear-gradient(150deg,#F9E3DA,#FBF3E6);border:1px solid rgba(198,158,107,.28);box-shadow:0 2px 10px rgba(198,158,107,.18)}
@@ -95,10 +97,10 @@ button{font-family:inherit}
 .hero-note{margin:10px 2px 0;font-size:11.5px;color:var(--ink-2);font-weight:600}
 
 /* ── filter chips ── */
-.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;
-  font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;-webkit-appearance:none}
+.chips{display:flex;gap:7px;flex-wrap:wrap;padding:2px 2px 4px}
+.chip{flex:0 0 auto;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;
+  font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;-webkit-appearance:none;min-height:32px}
+.chip.pri{border-color:#EBDCC2;color:var(--gold-d);background:var(--gold-cream)}
 .chip.on{background:linear-gradient(135deg,var(--rose),var(--rose-d));border-color:transparent;color:#fff;
   box-shadow:0 3px 10px rgba(214,118,131,.28)}
 
@@ -114,10 +116,12 @@ button{font-family:inherit}
 .badge.over{background:var(--over-bg);color:var(--over-ink);border-color:#EFCFC9}
 .badge.none{background:#F6F1EA;color:var(--muted);border-color:#EDE4D8}
 .item-meta{margin:7px 0 0 19px;font-size:12px;color:var(--ink-2);font-weight:600;line-height:1.55}
-.item-meta .sep{color:#EADCCC;margin:0 5px}
+.sep{color:#EADCCC;margin:0 5px}
 .dplus{margin:8px 0 0 19px;font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
 .dplus em{font-style:normal;color:var(--rose-d)}
 .dplus .approx{font-size:11.5px;font-weight:700;color:var(--muted);margin-left:5px}
+.dplus-sub{margin:3px 0 0 19px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:-.01em}
+.item-plan{margin:5px 0 0 19px;font-size:11.5px;font-weight:800;color:var(--gold-d)}
 .item-shop{margin:4px 0 0 19px;font-size:11.5px;color:var(--muted);font-weight:600}
 .item-actions{display:flex;gap:8px;margin:12px 0 0 19px}
 .btn-done{flex:1;padding:11px 12px;border:none;border-radius:14px;cursor:pointer;-webkit-appearance:none;
@@ -159,8 +163,12 @@ button{font-family:inherit}
 .rec-memo{font-size:12px;color:var(--ink-2);background:var(--gold-cream);border-radius:10px;padding:7px 10px;margin-top:7px;font-weight:600}
 .stars{font-size:12px;color:var(--gold);letter-spacing:.06em}
 .rec-btns{display:flex;gap:6px;margin-top:9px}
-.mini-btn{padding:6px 11px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink-2);
+.mini-btn{padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink-2);
   font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none}
+.dt-row{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.dt-row .dt-date{font-size:11.5px;font-weight:800;color:var(--rose-d);letter-spacing:-.01em}
+.dt-row .dt-body{font-size:12px;color:var(--ink-2);font-weight:600;line-height:1.5;margin-top:3px}
+.dt-row .rec-btns{margin-top:7px}
 .mini-btn.danger{color:var(--over-ink);border-color:#EFCFC9}
 
 /* ── timeline ── */
@@ -226,6 +234,29 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   color:var(--over-ink);font-size:13px;font-weight:800;cursor:pointer;-webkit-appearance:none}
 .sheet .hint{font-size:11px;color:var(--muted);font-weight:600;margin-top:6px;line-height:1.5}
 
+/* ── ☁️ 병합 선택 시트 ── */
+.merge-lead{font-size:12.5px;color:var(--ink-2);font-weight:600;line-height:1.55;margin:-6px 0 12px}
+.merge-cols{display:flex;gap:8px}
+.merge-col{flex:1;border:1px solid var(--line);border-radius:14px;background:#FFFCF8;padding:10px 11px;min-width:0}
+.merge-col b{display:block;font-size:11.5px;font-weight:800;color:var(--label);margin-bottom:4px}
+.merge-col span{display:block;font-size:12px;font-weight:700;color:var(--ink);line-height:1.5}
+.merge-col.take{border-color:#EBDCC2;background:var(--gold-cream)}
+.merge-warn{margin-top:10px;font-size:11.5px;font-weight:700;color:var(--over-ink);background:var(--over-bg);border:1px solid #EFCFC9;
+  border-radius:12px;padding:9px 11px;line-height:1.55}
+.merge-btns{margin-top:12px}
+.merge-btns .btn-main,.merge-btns .btn-sub{width:100%;margin-top:8px}
+
+/* ── 아래로 당겨서 새로고침 ── */
+#pullRefresh{position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top));z-index:60;
+  transform:translate(-50%,-72px);opacity:0;pointer-events:none;
+  background:rgba(69,52,48,.94);color:#FFF9F7;font-size:12px;font-weight:800;letter-spacing:-.01em;
+  padding:8px 14px;border-radius:999px;white-space:nowrap;
+  box-shadow:0 6px 18px rgba(69,52,48,.22);transition:opacity .16s ease}
+#pullRefresh.on{opacity:1}
+#pullRefresh.ready,#pullRefresh.busy{background:var(--rose-d)}
+.dup-note{margin-top:9px;font-size:11.5px;font-weight:700;color:var(--gold-d);background:var(--gold-cream);
+  border:1px solid #EBDCC2;border-radius:12px;padding:8px 11px;line-height:1.5}
+
 /* ── toast ── */
 .toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
   z-index:60;background:rgba(69,52,48,.92);color:#fff;font-size:12.5px;font-weight:700;padding:10px 16px;border-radius:999px;
@@ -248,7 +279,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     <div class="top-right"><span class="cloud-dot hidden" id="cloudDot" aria-hidden="true">☁️</span><button class="icon-btn" id="btnSettings" aria-label="설정">⚙️</button></div>
   </div>
 
-  <div class="warnbar" id="storageWarn">⚠️ 이 화면에서는 자동 저장이 막혀 있어요. 공유 → <b>Safari로 열기</b>로 다시 열어 주세요. (기록·화면은 동작하지만 저장이 안 됩니다)</div>
+  <div class="warnbar" id="storageWarn">⚠️ 이 기기에 자동 저장이 막혀 있어요. 가족 공유(☁️)가 연결돼 있으면 클라우드에는 저장돼요. 공유 → <b>Safari로 열기</b>로 다시 열면 대부분 풀려요.</div>
 
   <!-- ═══════════ 홈 / 현황 ═══════════ -->
   <section id="viewHome">
@@ -306,7 +337,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     </div>
     <div class="set-card">
       <div style="font-size:13px;font-weight:800">백업 불러오기</div>
-      <div class="set-note">파일을 선택하거나 백업 JSON을 붙여넣으세요. 불러오기 전에 확인창이 뜨고, 직전 상태는 한 번 되돌릴 수 있어요.</div>
+      <div class="set-note" id="importNote">파일을 선택하거나 백업 JSON을 붙여넣으세요. 불러오기 전에 확인창이 뜨고, 직전 상태는 한 번 되돌릴 수 있어요.</div>
       <div class="set-row" style="margin-top:11px">
         <button class="set-btn" id="btnLoadFile">📁 파일 선택</button>
         <button class="set-btn" id="btnLoadPaste">붙여넣은 내용 불러오기</button>
@@ -316,7 +347,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     </div>
     <div class="set-card">
       <div style="font-size:13px;font-weight:800">전체 초기화</div>
-      <div class="set-note">모든 항목과 기록을 지웁니다. 두 번 눌러야 실행돼요.</div>
+      <div class="set-note" id="resetNote">모든 항목과 기록을 지웁니다. 두 번 눌러야 실행돼요.</div>
       <button class="set-btn danger" id="btnReset" style="width:100%;margin-top:10px">🗑 전체 초기화</button>
     </div>
     <div class="set-note" id="setFoot" style="text-align:center;margin:18px 0 6px">꽃단장 🌸 · 기록은 이 기기에만 저장돼요</div>
@@ -348,6 +379,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   <div class="rate-row" id="recRate"></div>
   <label class="f-lbl">메모 (선택)</label>
   <textarea class="paste" id="recMemo" style="min-height:64px" placeholder="예: 컬 잘 나옴, 다음엔 4주 뒤에"></textarea>
+  <div class="dup-note hidden" id="recDupNote"></div>
   <div class="sheet-btns">
     <button class="btn-sub" id="recCancel">취소</button>
     <button class="btn-main" id="recSave">저장</button>
@@ -394,6 +426,22 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   <div id="dtTimeline"></div>
 </div>
 
+<div class="sheet" id="sheetMerge">
+  <div class="sheet-grab"></div>
+  <h2>☁️ 가족 공유 연결</h2>
+  <p class="merge-lead">이 가족 코드로 이미 저장된 기록이 있어요. 어느 쪽을 남길까요?</p>
+  <div class="merge-cols">
+    <div class="merge-col" id="mrgColCloud"><b>☁️ 클라우드</b><span id="mrgCloud"></span></div>
+    <div class="merge-col" id="mrgColPhone"><b>📱 이 폰</b><span id="mrgPhone"></span></div>
+  </div>
+  <div class="merge-warn" id="mrgWarn"></div>
+  <div class="merge-btns">
+    <button class="btn-main" id="mrgTakeCloud">☁️ 클라우드 불러오기</button>
+    <button class="btn-sub" id="mrgTakePhone">📱 이 폰 기록 올리기</button>
+    <button class="btn-sub" id="mrgCancel">그만두기</button>
+  </div>
+</div>
+
 <div class="sheet" id="sheetConfirm">
   <div class="sheet-grab"></div>
   <h2 id="cfTitle">확인</h2>
@@ -404,6 +452,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   </div>
 </div>
 
+<div id="pullRefresh" aria-hidden="true">↻ 새로고침</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -433,6 +482,7 @@ var PRESETS = [
 ];
 
 var LS_KEY = 'beautyCareNote.v1';
+var UNDO_KEY = LS_KEY + '-undo';
 var storeOK = true;
 var state = null;
 var undoSnapshot = null;
@@ -444,6 +494,8 @@ var editingRecordId = null;
 var editingItemId = null;
 var editingRate = 0;
 var detailItemId = null;
+var returnToItem = null;          /* 상세 시트에서 기록을 고친 뒤 다시 상세로 */
+var dupArmed = false;            /* 같은 날 같은 항목 중복 저장 한 번 더 확인 */
 var confirmCb = null;
 var confirmCancel = null;
 var resetArmed = false;
@@ -482,7 +534,18 @@ function approx(d){
   if(w === 0) return '약 ' + m + '개월';
   return '약 ' + m + '개월 ' + w + '주';
 }
+function fmtDate(s){ return isDateStr(s) ? s.replace(/-/g,'.') : String(s==null?'':s); }
 function fmtDateKo(s){ return s.slice(5).replace('-', '/'); }
+function byIdAsc(a,b){ var x=String((a&&a.id)||''), y=String((b&&b.id)||''); return x<y?-1:(x>y?1:0); }
+/* 타임라인·이력은 입력 순서가 아니라 실제 날짜 내림차순(같은 날은 작성 순) */
+function recordsDesc(){
+  return state.records.slice().sort(function(a,b){
+    if(a.date !== b.date) return a.date < b.date ? 1 : -1;
+    var ca = String(a.createdAt||''), cb = String(b.createdAt||'');
+    if(ca !== cb) return ca < cb ? 1 : -1;
+    return String(a.id||'') < String(b.id||'') ? 1 : -1;
+  });
+}
 
 var toastTimer = null;
 function toast(msg){
@@ -504,17 +567,20 @@ function defaultState(){
 function normalize(raw){
   var s = defaultState();
   var out = {version:1, items:[], records:[]};
-  var seen = {};
+  var byId = {}, nameToId = {}, alias = {};
   if(raw && typeof raw === 'object'){
     var items = Array.isArray(raw.items) ? raw.items : [];
     items.forEach(function(it){
       if(!it || typeof it !== 'object') return;
       var name = String(it.name==null?'':it.name).trim();
-      if(!name || seen[name]) return;
-      seen[name] = 1;
+      if(!name) return;
+      var id = String(it.id || uid());
+      if(byId[id]) return;
+      var kept = nameToId[name];
+      if(kept){ alias[id] = kept; return; }   /* 같은 이름은 한 항목으로 합치고 기록은 살림 */
       var cv = Math.round(+it.cycleV);
       out.items.push({
-        id: String(it.id || uid()),
+        id: id,
         name: name,
         cat: CAT_COLOR[it.cat] ? it.cat : '기타',
         cycleV: (cv && cv > 0) ? cv : 4,
@@ -523,19 +589,24 @@ function normalize(raw){
         memo: String(it.memo==null?'':it.memo),
         createdAt: isDateStr(it.createdAt) ? it.createdAt : todayStr()
       });
+      byId[id] = 1; nameToId[name] = id;
     });
     var recs = Array.isArray(raw.records) ? raw.records : [];
+    var recSeen = {};
     recs.forEach(function(r){
       if(!r || typeof r !== 'object') return;
       if(!isDateStr(r.date)) return;
       var itemId = String(r.itemId || '');
-      var item = null;
-      out.items.forEach(function(it){ if(it.id === itemId) item = it; });
-      if(!item) return;   /* 항목 없는 기록은 정리 */
+      var guard = 0;
+      while(alias[itemId] && guard++ < 10) itemId = alias[itemId];
+      if(!byId[itemId]) return;   /* 항목 없는 기록은 정리 */
+      var rid = String(r.id || uid());
+      if(recSeen[rid]) return;
+      recSeen[rid] = 1;
       var cost = (r.cost==='' || r.cost==null) ? null : Math.max(0, Math.round(+r.cost));
       var rate = Math.min(5, Math.max(0, Math.round(+r.rate || 0)));
       out.records.push({
-        id: String(r.id || uid()),
+        id: rid,
         itemId: itemId,
         date: r.date,
         shop: String(r.shop==null?'':r.shop),
@@ -551,19 +622,35 @@ function normalize(raw){
     if(raw && Array.isArray(raw.items)){ out = {version:1, items:[], records:out.records}; }
     else { out = s; }
   }
-  out.records.sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  out.records.sort(function(a,b){
+    if(a.date !== b.date) return a.date < b.date ? -1 : 1;
+    var ca = String(a.createdAt||''), cb = String(b.createdAt||'');
+    if(ca !== cb) return ca < cb ? -1 : 1;
+    return String(a.id||'') < String(b.id||'') ? -1 : 1;
+  });
   return out;
 }
 function saveLocal(){
-  if(!storeOK) return false;
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); return true; }
-  catch(e){ storeOK = false; $('storageWarn').classList.add('on'); return false; }
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    if(!storeOK){ storeOK = true; $('storageWarn').classList.remove('on'); }
+    return true;
+  }catch(e){
+    storeOK = false; $('storageWarn').classList.add('on');
+    return false;
+  }
 }
-/* 저장 = 이 기기(localStorage) 먼저, 성공하면 클라우드로 디바운스 반영 */
+/* 저장 = 이 기기(localStorage) 먼저, 실패해도 클라우드 업로드는 막지 않음 */
 function save(){
   var ok = saveLocal();
-  if(ok) cloudPush();
+  markDirty();
+  if(sync.status === 'on' && sync.doc) cloudPush();
   return ok;
+}
+function markDirty(){
+  try{ sync.dirty = sync.base ? (syncSig(state) !== syncSig(sync.base)) : true; }
+  catch(e){ sync.dirty = true; }
+  writeSyncMeta(sync.code);
 }
 function load(){
   try{
@@ -583,28 +670,62 @@ function lastRecordOf(itemId){
   state.records.forEach(function(r){ if(r.itemId === itemId && (!last || r.date > last.date)) last = r; });
   return last;
 }
+/* 마지막 '완료' 기록 = 오늘까지의 기록. 미래 날짜 기록은 예정으로 따로 다룸 */
+function lastDoneOf(itemId, today){
+  var last = null;
+  state.records.forEach(function(r){
+    if(r.itemId !== itemId || r.date > today) return;
+    if(!last || r.date > last.date) last = r;
+  });
+  return last;
+}
+/* 가장 가까운 '예정' 기록 = 오늘 이후 날짜 */
+function nextPlannedOf(itemId, today){
+  var plan = null;
+  state.records.forEach(function(r){
+    if(r.itemId !== itemId || r.date <= today) return;
+    if(!plan || r.date < plan.date) plan = r;
+  });
+  return plan;
+}
 function statusOf(it){
-  var last = lastRecordOf(it.id);
-  if(!last) return {key:'none', last:null, elapsed:null, total:null, due:null};
   var today = todayStr();
+  var planned = nextPlannedOf(it.id, today);
+  var planIn = planned ? diffDays(today, planned.date) : null;
+  var last = lastDoneOf(it.id, today);
+  if(!last){
+    return {key: planned ? 'plan' : 'none', last:null, planned:planned, planIn:planIn, elapsed:null, total:null, due:null};
+  }
   var elapsed = diffDays(last.date, today);
-  if(elapsed < 0) elapsed = 0;
   var due = addCycle(last.date, it.cycleV, it.cycleU);
   var total = diffDays(last.date, due);
-  if(elapsed > total) return {key:'over', last:last, elapsed:elapsed, total:total, due:due};
-  if(total > 0 && elapsed >= Math.ceil(total*0.8)) return {key:'soon', last:last, elapsed:elapsed, total:total, due:due};
-  return {key:'ok', last:last, elapsed:elapsed, total:total, due:due};
+  var out = {last:last, planned:planned, planIn:planIn, elapsed:elapsed, total:total, due:due};
+  if(elapsed > total){ out.key = 'over'; return out; }
+  if(total > 0 && elapsed >= Math.ceil(total*0.8)){ out.key = 'soon'; return out; }
+  out.key = 'ok';
+  return out;
 }
 var STATUS_META = {
   ok:   {cls:'ok',   text:'여유'},
   soon: {cls:'soon', text:'슬슬 갈 때!'},
   over: {cls:'over', text:'관리 시기 지남'},
+  plan: {cls:'none', text:'예정 있음'},
   none: {cls:'none', text:'아직 기록 없음'}
 };
 function dplus(st){
-  if(st.key === 'none') return '기록을 남기면 D+ 카운트가 시작돼요';
+  if(!st.last){
+    if(st.planned) return '<em>D-' + st.planIn + '일 예정</em><span class="approx">' + fmtDate(st.planned.date) + '</span>';
+    return '기록을 남기면 D+ 카운트가 시작돼요';
+  }
   if(st.elapsed === 0) return '<em>D+0일</em> · 오늘 관리 완료!';
   return '<em>D+' + st.elapsed + '일</em><span class="approx">' + approx(st.elapsed) + ' 경과</span>';
+}
+function dueLine(st){
+  if(!st.last || !st.due) return '';
+  var rest = st.total - st.elapsed;
+  if(rest > 0) return '권장일 ' + fmtDate(st.due) + ' · ' + rest + '일 뒤';
+  if(rest === 0) return '권장일 ' + fmtDate(st.due) + ' · 오늘이 권장일이에요';
+  return '권장일 ' + fmtDate(st.due) + ' · ' + (-rest) + '일 지남';
 }
 
 /* ─────────── 시트 열기/닫기 ─────────── */
@@ -621,10 +742,20 @@ function closeSheets(){
   document.body.classList.remove('sheet-open');
   document.body.style.top = '';
   $('back').classList.remove('on');
-  ['sheetRecord','sheetItem','sheetDetail','sheetConfirm'].forEach(function(id){
+  ['sheetRecord','sheetItem','sheetDetail','sheetConfirm','sheetMerge'].forEach(function(id){
     $(id).classList.remove('on');
   });
   window.scrollTo(0, scrollLockY);
+  /* 편집 중 미뤄 둔 다른 기기 변경이 있으면 닫은 뒤 반영 */
+  if(sync.deferred){
+    var d = sync.deferred;
+    sync.deferred = null;
+    setTimeout(function(){ applyCloudData(d, true); }, 220);
+  }
+}
+/* 기록·항목 시트에서 입력 중인지 (동기화 수신 시 폼 덮어쓰기 방지) */
+function formSheetOpen(){
+  return $('sheetRecord').classList.contains('on') || $('sheetItem').classList.contains('on');
 }
 function askConfirm(title, body, yesLabel, cb, cancelCb){
   $('cfTitle').textContent = title;
@@ -638,9 +769,12 @@ function askConfirm(title, body, yesLabel, cb, cancelCb){
 /* ─────────── 홈 렌더 ─────────── */
 function renderChips(){
   var list = ['전체','피부과','속눈썹','네일·패디','헤어','기타','갈 때 된 것만'];
+  var need = state.items.filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over'; }).length;
   var html = '';
   list.forEach(function(c){
-    html += '<button class="chip' + (filter===c?' on':'') + '" data-chip="' + esc(c) + '">' + esc(c) + '</button>';
+    var label = (c === '갈 때 된 것만' && need) ? (c + ' ' + need) : c;
+    var cls = 'chip' + (filter === c ? ' on' : (c === '갈 때 된 것만' && need ? ' pri' : ''));
+    html += '<button class="' + cls + '" data-chip="' + esc(c) + '">' + esc(label) + '</button>';
   });
   $('chips').innerHTML = html;
 }
@@ -654,7 +788,7 @@ function visibleItems(){
   } else if(filter !== '전체'){
     arr = arr.filter(function(it){ return it.cat === filter; });
   }
-  var rank = {over:0, soon:1, ok:2, none:3};
+  var rank = {over:0, soon:1, ok:2, plan:3, none:4};
   arr.sort(function(a,b){
     var sa = statusOf(a), sb = statusOf(b);
     if(rank[sa.key] !== rank[sb.key]) return rank[sa.key] - rank[sb.key];
@@ -685,10 +819,11 @@ function renderItems(){
     var recCount = state.records.filter(function(r){ return r.itemId === it.id; }).length;
     var metaLine = esc(it.cat) + '<span class="sep">·</span>' + esc(cycleText(it));
     if(st.last){
-      metaLine += '<span class="sep">·</span>마지막 ' + esc(st.last.date);
+      metaLine += '<span class="sep">·</span>마지막 ' + esc(fmtDate(st.last.date));
     } else {
       metaLine += '<span class="sep">·</span>마지막 기록 없음';
     }
+    var dueSub = dueLine(st);
     var shopLine = (it.shop ? '<div class="item-shop">🏪 ' + esc(it.shop) + '</div>' : '')
                  + (it.memo ? '<div class="item-shop">📝 ' + esc(it.memo) + '</div>' : '');
     html += '<div class="item-card">'
@@ -699,6 +834,8 @@ function renderItems(){
       + '</div>'
       + '<div class="item-meta">' + metaLine + '</div>'
       + '<div class="dplus">' + dplus(st) + '</div>'
+      + (dueSub ? '<div class="dplus-sub">' + esc(dueSub) + '</div>' : '')
+      + (st.last && st.planned ? '<div class="item-plan">📅 예정 ' + esc(fmtDate(st.planned.date)) + ' · D-' + st.planIn + '</div>' : '')
       + shopLine
       + '<div class="item-actions">'
       +   '<button class="btn-done" data-done="' + esc(it.id) + '">오늘 관리했어요 ✓</button>'
@@ -712,15 +849,19 @@ function renderHome(){
   var t = todayStr();
   var d = parseD(t);
   $('heroDate').textContent = (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' + ['일','월','화','수','목','금','토'][d.getDay()] + ' · 오늘의 꽃단장';
-  var soon=0, over=0;
+  var soon=0, over=0, plan=0;
   state.items.forEach(function(it){
-    var k = statusOf(it).key;
+    var st = statusOf(it);
+    var k = st.key;
     if(k==='soon') soon++;
     if(k==='over') over++;
+    if(st.planned) plan++;
   });
   $('statTotal').textContent = state.items.length;
   $('statSoon').textContent = soon;
   $('statOver').textContent = over;
+  var dd = $('heroDday');
+  if(dd) dd.textContent = plan ? ('📅 예정 ' + plan + '건') : '';
   var note;
   if(state.items.length === 0) note = '관리 항목을 추가하면 마지막 관리일과 경과일을 자동으로 정리해 드려요.';
   else if(over > 0) note = '관리 시기가 지난 항목 ' + over + '개가 있어요. 오늘 살짝 챙겨볼까요?';
@@ -767,11 +908,14 @@ function renderCal(){
       var it = itemById(r.itemId);
       if(it && cats.indexOf(it.cat) < 0) cats.push(it.cat);
     });
+    var future = ds > today;
     var dots = '';
     cats.slice(0,4).forEach(function(ck){
-      dots += '<i style="background:' + CAT_COLOR[ck] + '"></i>';
+      dots += future
+        ? '<i style="background:transparent;box-shadow:inset 0 0 0 1.5px ' + CAT_COLOR[ck] + '"></i>'
+        : '<i style="background:' + CAT_COLOR[ck] + '"></i>';
     });
-    if(cats.length > 4) dots += '<i style="background:' + CAT_COLOR['기타'] + '"></i>';
+    if(cats.length > 4) dots += '<i style="background:' + (future ? 'transparent' : CAT_COLOR['기타']) + (future ? ';box-shadow:inset 0 0 0 1.5px ' + CAT_COLOR['기타'] : '') + '"></i>';
     var cls = 'cal-cell' + (c.out ? ' out' : '') + (ds === today ? ' today' : '') + (ds === selDate ? ' sel' : '');
     html += '<button class="' + cls + '" data-date="' + ds + '"><span class="d">' + c.d + '</span><span class="cal-dots">' + dots + '</span></button>';
   });
@@ -783,7 +927,8 @@ function renderCal(){
     });
     return used ? '<span style="margin-right:10px"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + c.color + ';margin-right:4px"></i>' + esc(c.key) + '</span>' : '';
   }).join('');
-  $('calLegend').innerHTML = leg || '기록을 남기면 여기에 색 범례가 생겨요.';
+  $('calLegend').innerHTML = (leg || '기록을 남기면 여기에 색 범례가 생겨요.')
+    + (state.records.some(function(r){ return r.date > today; }) ? ' <span style="color:var(--muted)">· 속이 빈 점 = 예정</span>' : '');
   renderDayList();
   renderTimeline();
 }
@@ -798,9 +943,10 @@ function recCardHtml(r){
   if(r.shop) bits.push('🏪 ' + esc(r.shop));
   if(r.cost != null) bits.push('💸 ' + won(r.cost));
   var stars = r.rate > 0 ? '<span class="stars">' + '★'.repeat(r.rate) + '☆'.repeat(5-r.rate) + '</span>' : '';
+  var plan = r.date > todayStr() ? '<span class="badge soon" style="font-size:10px;padding:2px 8px">예정</span>' : '';
   var html = '<div class="rec-card">'
     + '<div class="rec-top"><span class="cat-dot" style="background:' + (it ? CAT_COLOR[it.cat] : CAT_COLOR['기타']) + '"></span>'
-    + '<span class="rec-name">' + esc(it ? it.name : '삭제된 항목') + '</span>' + stars + '</div>'
+    + '<span class="rec-name">' + esc(it ? it.name : '삭제된 항목') + '</span>' + plan + stars + '</div>'
     + (bits.length ? '<div class="rec-meta">' + bits.join('<span class="sep">·</span>') + '</div>' : '')
     + (r.memo ? '<div class="rec-memo">' + esc(r.memo) + '</div>' : '')
     + '<div class="rec-btns"><button class="mini-btn" data-redit="' + r.id + '">수정</button>'
@@ -810,9 +956,16 @@ function recCardHtml(r){
 }
 function renderDayList(){
   var host = $('dayList');
-  if(!selDate){ host.innerHTML = ''; return; }
+  if(!selDate){
+    host.innerHTML = '<div class="day-title">🌸 날짜를 누르면 그날 기록을 볼 수 있어요</div>';
+    return;
+  }
   var recs = state.records.filter(function(r){ return r.date === selDate; });
-  recs.sort(function(a,b){ return a.id < b.id ? -1 : 1; });
+  recs.sort(function(a,b){
+    var ca = String(a.createdAt||''), cb = String(b.createdAt||'');
+    if(ca !== cb) return ca < cb ? -1 : 1;
+    return String(a.id||'') < String(b.id||'') ? -1 : 1;
+  });
   var d = parseD(selDate);
   var title = (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + ['일','월','화','수','목','금','토'][d.getDay()] + ')';
   var html = '<div class="day-title">🌸 ' + esc(title) + '에 받은 관리 ' + recs.length + '건</div>';
@@ -827,23 +980,25 @@ function renderDayList(){
 }
 function renderTimeline(){
   var host = $('timeline');
-  var recs = state.records.slice().reverse();
+  var recs = recordsDesc();
   $('tlCount').textContent = '최근 순 ' + recs.length + '건';
   if(recs.length === 0){
     host.innerHTML = '<div class="empty-box" style="padding:20px">아직 관리 기록이 없어요.<br>현황 탭에서 "오늘 관리했어요 ✓"를 눌러보세요.</div>';
     return;
   }
+  var today = todayStr();
   var html = '';
   recs.slice(0, 30).forEach(function(r){
     var it = itemById(r.itemId);
     var bits = [];
+    if(r.date > today) bits.push('<span style="color:var(--gold-d);font-weight:800">예정</span>');
     if(r.shop) bits.push(esc(r.shop));
     if(r.cost != null) bits.push(won(r.cost));
     if(r.rate > 0) bits.push('<span class="stars">' + '★'.repeat(r.rate) + '</span>');
     if(r.memo) bits.push(esc(r.memo));
-    html += '<div class="tl-item"><span class="tl-date">' + fmtDateKo(r.date) + '</span>'
+    html += '<div class="tl-item"><span class="tl-date">' + esc(fmtDate(r.date)) + '</span>'
       + '<span class="tl-body"><b style="color:var(--ink)">' + esc(it ? it.name : '') + '</b>'
-      + (bits.length ? ' · ' + bits.join(' · ') : '') + '</span></div>';
+      + (bits.length ? '<span class="sep">·</span>' + bits.join('<span class="sep">·</span>') : '') + '</span></div>';
   });
   if(recs.length > 30) html += '<div class="set-note" style="text-align:center">최근 30건만 보여요 · 전체는 백업에서 확인</div>';
   host.innerHTML = html;
@@ -863,12 +1018,18 @@ function renderSet(){
     }
   }catch(e){ info = '자동 저장 상태를 확인할 수 없어요'; }
   $('setStorage').textContent = info;
+  var impNote = $('importNote');
+  if(impNote) impNote.textContent = '파일을 선택하거나 백업 JSON을 붙여넣으세요. 불러오기 전에 확인창이 뜨고, 직전 상태는 한 번 되돌릴 수 있어요.'
+    + (sync.status === 'on' ? ' 가족 공유 중이면 다른 기기의 기록도 함께 바뀌어요.' : '');
+  var rNote = $('resetNote');
+  if(rNote) rNote.textContent = '모든 항목과 기록을 지웁니다. 두 번 눌러야 실행돼요.'
+    + (sync.status === 'on' ? ' 가족 공유 중이면 다른 기기의 기록도 같이 지워져요.' : '');
   renderSyncBox();
   var foot = $('setFoot');
   if(foot) foot.textContent = (sync.status === 'on') ? '꽃단장 🌸 · 가족 코드로 실시간 공유 중' : '꽃단장 🌸 · 기록은 이 기기에만 저장돼요';
   if(undoSnapshot){
     $('undoBar').classList.add('on');
-    $('undoText').textContent = '불러오기 직전 상태를 잠깐 보관 중이에요.';
+    $('undoText').textContent = '불러오기·초기화 직전 상태를 보관 중이에요 · 앱을 닫아도 되돌릴 수 있어요';
   } else {
     $('undoBar').classList.remove('on');
   }
@@ -882,10 +1043,38 @@ function fillItemSelect(sel){
   });
   sel.innerHTML = html;
 }
-function openRecordSheet(dateStr, recordId){
+/* 같은 날 같은 항목 기록 찾기 (중복 저장 가볍게 확인) */
+function dupRecordOf(itemId, date){
+  if(!itemId || !isDateStr(date)) return null;
+  var found = null;
+  state.records.forEach(function(r){
+    if(editingRecordId && r.id === editingRecordId) return;
+    if(r.itemId === itemId && r.date === date) found = r;
+  });
+  return found;
+}
+function updateDupNote(){
+  var note = $('recDupNote');
+  if(!note) return;
+  var dup = editingRecordId ? null : dupRecordOf($('recItem').value, $('recDate').value);
+  if(dup){
+    note.classList.remove('hidden');
+    note.textContent = '이 날 같은 항목 기록이 이미 있어요' + (dup.shop ? ' (' + dup.shop + ')' : '')
+      + ' · 그래도 남기려면 [저장]을 한 번 더 눌러 주세요';
+  } else {
+    note.classList.add('hidden');
+    note.textContent = '';
+    dupArmed = false;
+    $('recSave').textContent = '저장';
+  }
+}
+function openRecordSheet(dateStr, recordId, fromDetailItemId){
   if(state.items.length === 0){ toast('먼저 관리 항목을 추가해 주세요 🌸'); return; }
   fillItemSelect($('recItem'));
   editingRecordId = recordId || null;
+  returnToItem = fromDetailItemId || null;
+  dupArmed = false;
+  $('recSave').textContent = '저장';
   $('recTitle').textContent = recordId ? '기록 수정' : '관리 기록';
   $('recDelete').classList.toggle('hidden', !recordId);
   var rateRow = $('recRate');
@@ -931,6 +1120,7 @@ function openRecordSheet(dateStr, recordId){
     $('recMemo').value = '';
   }
   paintRate();
+  updateDupNote();
   openSheet('sheetRecord');
 }
 function saveRecord(){
@@ -941,6 +1131,16 @@ function saveRecord(){
   var costRaw = $('recCost').value.trim();
   var cost = costRaw === '' ? null : Math.max(0, Math.round(+costRaw));
   if(costRaw !== '' && (cost == null || isNaN(cost))){ toast('비용은 숫자로 입력해 주세요'); return; }
+  if(!editingRecordId){
+    var dup = dupRecordOf(itemId, date);
+    if(dup && !dupArmed){
+      dupArmed = true;
+      updateDupNote();
+      $('recSave').textContent = '그래도 저장';
+      toast('이 날 같은 항목 기록이 이미 있어요 · 한 번 더 누르면 저장돼요');
+      return;
+    }
+  }
   if(editingRecordId){
     state.records.forEach(function(r){
       if(r.id === editingRecordId){
@@ -963,8 +1163,11 @@ function saveRecord(){
     toast('관리 기록을 남겼어요 🌸');
   }
   save();
+  var back = returnToItem;
+  returnToItem = null;
   closeSheets();
   renderAll();
+  if(back && itemById(back)) setTimeout(function(){ openDetail(back); }, 40);
 }
 
 /* ─────────── 항목 시트 ─────────── */
@@ -1041,10 +1244,12 @@ function openDetail(itemId){
   detailItemId = itemId;
   $('dtName').textContent = it.name;
   var st = statusOf(it);
-  var recs = state.records.filter(function(r){ return r.itemId === itemId; }).slice().reverse();
+  var recs = recordsDesc().filter(function(r){ return r.itemId === itemId; });
   var meta = esc(it.cat) + ' · ' + esc(cycleText(it)) + ' · 기록 ' + recs.length + '건';
-  if(st.last) meta += ' · 마지막 ' + esc(st.last.date) + ' (' + STATUS_META[st.key].text + ')';
+  if(st.last) meta += ' · 마지막 ' + fmtDate(st.last.date) + ' (' + STATUS_META[st.key].text + ')';
+  if(st.planned) meta += ' · 예정 ' + fmtDate(st.planned.date) + ' (D-' + st.planIn + ')';
   $('dtMeta').textContent = meta;
+  var today = todayStr();
   var html = '';
   if(recs.length === 0){
     html = '<div class="empty-box" style="padding:18px">아직 기록이 없어요.<br>관리 받은 날을 남겨 보세요 🌸</div>';
@@ -1052,13 +1257,16 @@ function openDetail(itemId){
     recs.forEach(function(r){
       var bits = [];
       if(r.shop) bits.push(esc(r.shop));
-      if(r.cost != null) bits.push(won(r.cost));
+      if(r.cost != null) bits.push('💸 ' + won(r.cost));
       if(r.rate > 0) bits.push('<span class="stars">' + '★'.repeat(r.rate) + '</span>');
       if(r.memo) bits.push(esc(r.memo));
-      html += '<div class="tl-item"><span class="tl-date">' + r.date + '</span>'
-        + '<span class="tl-body">' + (bits.length ? bits.join(' · ') : '기록') + '</span>'
-        + '<button class="mini-btn" data-redit="' + r.id + '">수정</button>'
-        + '<button class="mini-btn danger" data-rdel="' + r.id + '" style="margin-left:5px">삭제</button></div>';
+      html += '<div class="dt-row">'
+        + '<div class="dt-date">' + esc(fmtDate(r.date))
+        +   (r.date > today ? ' <span style="color:var(--gold-d)">· 예정</span>' : '') + '</div>'
+        + (bits.length ? '<div class="dt-body">' + bits.join('<span class="sep">·</span>') + '</div>' : '')
+        + '<div class="rec-btns"><button class="mini-btn" data-redit="' + esc(r.id) + '">수정</button>'
+        +   '<button class="mini-btn danger" data-rdel="' + esc(r.id) + '">삭제</button></div>'
+        + '</div>';
     });
   }
   $('dtTimeline').innerHTML = html;
@@ -1066,32 +1274,68 @@ function openDetail(itemId){
 }
 
 /* ─────────── 백업 ─────────── */
-function download(){
+function standaloneApp(){
   try{
-    var blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    if(window.navigator && window.navigator.standalone === true) return true;
+    if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+  }catch(e){}
+  return false;
+}
+function saveUndo(){
+  undoSnapshot = JSON.stringify(state);
+  try{ localStorage.setItem(UNDO_KEY, undoSnapshot); }catch(e){}
+}
+function clearUndo(){
+  undoSnapshot = null;
+  try{ localStorage.removeItem(UNDO_KEY); }catch(e){}
+}
+function loadUndo(){
+  try{
+    var raw = localStorage.getItem(UNDO_KEY);
+    if(!raw) return;
+    var o = JSON.parse(raw);
+    if(o && typeof o === 'object' && Array.isArray(o.items) && Array.isArray(o.records)) undoSnapshot = raw;
+  }catch(e){}
+}
+function download(){
+  var text = JSON.stringify(state, null, 2);
+  /* 홈 화면 앱(standalone)에서는 파일 내려받기가 막히는 경우가 있어 복사로 안내 */
+  if(standaloneApp()){
+    var box0 = $('pasteBox');
+    if(box0){ box0.value = text; box0.classList.remove('hidden'); }
+    copyBackup(text);
+    toast('홈 화면 앱에서는 파일 저장이 막혀요 · 백업 내용을 복사했어요 📋');
+    return;
+  }
+  try{
+    var blob = new Blob([text], {type:'application/json'});
     var a = document.createElement('a');
+    if(typeof a.download === 'undefined'){ throw new Error('no download'); }
     a.href = URL.createObjectURL(blob);
     a.download = 'beauty_care_backup_' + todayStr() + '.json';
     document.body.appendChild(a);
     a.click();
     setTimeout(function(){
-      URL.revokeObjectURL(a.href);
-      document.body.removeChild(a);
+      try{ URL.revokeObjectURL(a.href); document.body.removeChild(a); }catch(e){}
     }, 400);
-    toast('백업 파일을 내려받았어요 ⬇️');
-  }catch(e){ toast('내려받기에 실패했어요'); }
+    toast('백업 파일을 내려받았어요 ⬇️ · 안 보이면 [📋 백업 복사]를 눌러 주세요');
+  }catch(e){
+    var box = $('pasteBox');
+    if(box){ box.value = text; box.classList.remove('hidden'); }
+    toast('파일로 저장하지 못했어요 · 백업 내용을 아래 칸에 담았어요 📋');
+  }
 }
-function copyBackup(){
-  var text = JSON.stringify(state);
+function copyBackup(text){
+  var body = (typeof text === 'string') ? text : JSON.stringify(state);
   var done = function(){ toast('백업 내용을 복사했어요 📋'); };
   var fail = function(){
     var box = $('pasteBox');
-    box.value = text;
+    box.value = body;
     box.classList.remove('hidden');
     toast('복사가 막혀 밑칸에 넣어뒀어요. 직접 복사해 주세요');
   };
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(done, fail);
+    navigator.clipboard.writeText(body).then(done, fail);
   } else { fail(); }
 }
 function applyImport(parsed, sourceName){
@@ -1100,15 +1344,17 @@ function applyImport(parsed, sourceName){
     return;
   }
   var next = normalize(parsed);
-  askConfirm('백업 불러오기',
-    sourceName + '을(를) 불러올까요?\n\n· 항목 ' + next.items.length + '개 · 기록 ' + next.records.length + '건\n· 지금 내용은 직전 상태로 한 번 되돌릴 수 있어요',
+  var body = sourceName + '을(를) 불러올까요?\n\n· 불러올 내용: 항목 ' + next.items.length + '개 · 기록 ' + next.records.length + '건'
+    + '\n· 지금 내용: 항목 ' + state.items.length + '개 · 기록 ' + state.records.length + '건 (되돌리기로 한 번 복구할 수 있어요)'
+    + (sync.status === 'on' ? '\n\n⚠️ 가족 공유 중이라 다른 기기의 기록도 같이 바뀌어요.' : '');
+  askConfirm('백업 불러오기', body,
     '불러오기',
     function(){
-      undoSnapshot = JSON.stringify(state);
+      saveUndo();
       state = next;
       save();
       renderAll();
-      toast('백업을 불러왔어요 🌷');
+      toast(sync.status === 'on' ? '백업을 불러왔어요 · 클라우드로도 올리는 중' : '백업을 불러왔어요 🌷');
       switchTab('set');
     });
 }
@@ -1149,6 +1395,7 @@ function renderAll(){
 /* ═══════════ ☁️ 실시간 가족 동기화 (Firebase Firestore) ═══════════
    · 인터넷·CDN이 없거나 실패해도 이 앱은 localStorage만으로 100% 그대로 동작합니다.
    · 가족 코드와 기기 ID는 state와 분리된 별도 키(SYNC_KEY)에만 저장합니다.
+   · 문서를 통째로 덮어쓰지 않고, 트랜잭션 안에서 최신본을 읽어 3-way 병합한 뒤 씁니다.
    · 보안 규칙에 delete 권한이 없으므로 삭제 요청은 절대 보내지 않습니다. */
 var CLOUD_CFG = {
   apiKey: 'AIzaSyCmaa4eZlqjCr9epyI0Gbz25DEe8rul-YA',
@@ -1160,8 +1407,12 @@ var CLOUD_CFG = {
 };
 var FB_VER = '10.14.1';
 var SYNC_KEY = LS_KEY + '-sync';
+var SYNCED_ROOT = LS_KEY + '-synced';   /* 가족 코드별 '마지막으로 클라우드와 같았던 상태' */
 var SYNC_SUFFIX = '_beauty';
-var sync = {code:'', deviceId:'', status:'off', err:'', db:null, doc:null, unsub:null, pushTimer:null, lastPush:null, lastPull:null, pendingRef:null};
+var sync = {code:'', deviceId:'', status:'off', err:'', db:null, doc:null, unsub:null, pushTimer:null,
+  lastPush:null, lastPull:null, pendingRef:null, dirty:false, base:null, pushSeq:0, deferred:null};
+var pendingMergeToast = false;
+var mergePending = null;
 var fbSdk = {loading:false, cbs:[]};
 
 function syncKey(){ return sync.status + '|' + sync.code + '|' + sync.err; }
@@ -1170,20 +1421,45 @@ function newDeviceId(){
   return 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
 }
 function readSyncMeta(){
-  var out = {code:'', deviceId:''};
+  var out = {code:'', deviceId:'', dirty:false};
   try{
     var raw = localStorage.getItem(SYNC_KEY);
     if(raw){
       var o = JSON.parse(raw);
-      if(o && typeof o === 'object'){ out.code = String(o.code||''); out.deviceId = String(o.deviceId||''); }
+      if(o && typeof o === 'object'){
+        out.code = String(o.code||'');
+        out.deviceId = String(o.deviceId||'');
+        out.dirty = o.dirty === true;
+      }
     }
   }catch(e){}
   if(!out.deviceId) out.deviceId = newDeviceId();
   return out;
 }
 function writeSyncMeta(code){
-  try{ localStorage.setItem(SYNC_KEY, JSON.stringify({code: code||'', deviceId: sync.deviceId, at: new Date().toISOString()})); }catch(e){}
+  if(!sync.deviceId) return;      /* 클라우드 초기화 전에는 저장된 코드를 건드리지 않음 */
+  try{
+    localStorage.setItem(SYNC_KEY, JSON.stringify({
+      code: code||'', deviceId: sync.deviceId, at: new Date().toISOString(), dirty: sync.dirty === true
+    }));
+  }catch(e){}
 }
+/* ── 마지막 동기화 기준(base) 저장 — 기기·코드별 ── */
+function baseKey(code){ return SYNCED_ROOT + ':' + (code || 'none'); }
+function setBase(s){
+  try{ sync.base = syncData(s || {}); }catch(e){ sync.base = null; return; }
+  try{ localStorage.setItem(baseKey(sync.code), JSON.stringify(sync.base)); }catch(e){}
+}
+function loadBase(code){
+  try{
+    var raw = localStorage.getItem(baseKey(code));
+    if(!raw) return null;
+    var o = JSON.parse(raw);
+    if(o && typeof o === 'object' && Array.isArray(o.items) && Array.isArray(o.records)) return o;
+    return null;
+  }catch(e){ return null; }
+}
+function clearBase(code){ try{ localStorage.removeItem(baseKey(code)); }catch(e){} }
 function cleanCode(v){
   return String(v==null?'':v).trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,64);
 }
@@ -1203,14 +1479,79 @@ function lastSyncText(){
   var bits = [];
   if(sync.lastPush) bits.push('이 폰 → 클라우드 ' + fmtClock(sync.lastPush));
   if(sync.lastPull) bits.push('클라우드 → 이 폰 ' + fmtClock(sync.lastPull));
+  if(sync.dirty) bits.push('아직 못 올린 변경이 있어요');
   return bits.length ? bits.join(' · ') : '이번에 연결한 뒤로는 아직 주고받은 내용이 없어요';
 }
-function syncSummary(s){
-  if(!s) return '내용 없음';
-  return '항목 ' + ((s.items||[]).length) + '개 · 기록 ' + ((s.records||[]).length) + '건';
+function countText(s){
+  return '항목 ' + ((s && s.items || []).length) + '개 · 기록 ' + ((s && s.records || []).length) + '건';
 }
-function syncSig(s){
-  try{ return JSON.stringify({i:s.items, r:s.records}); }catch(e){ return ''; }
+/* 같은 이름·같은 id를 뺀 '한쪽에만 있는 것' 개수 */
+function onlyItemCount(a, b){
+  var names = {};
+  (b||[]).forEach(function(x){ if(x) names[String(x.name||'')] = 1; });
+  return (a||[]).filter(function(x){ return x && !names[String(x.name||'')]; }).length;
+}
+function onlyRecordCount(a, b){
+  var ids = {};
+  (b||[]).forEach(function(x){ if(x) ids[String(x.id||'')] = 1; });
+  return (a||[]).filter(function(x){ return x && !ids[String(x.id||'')]; }).length;
+}
+
+/* ═════ 서명 · 3-way 병합 도우미 ═════
+   화면 상태와 무관한 '기록 데이터'만 비교/병합합니다. */
+function syncData(s){
+  s = (s && typeof s === 'object') ? s : {};
+  return {
+    items: (Array.isArray(s.items) ? s.items.slice() : []).sort(byIdAsc),
+    records: (Array.isArray(s.records) ? s.records.slice() : []).sort(byIdAsc)
+  };
+}
+function syncSig(s){ try{ return JSON.stringify(syncData(s)); }catch(e){ return ''; } }
+function jstr(v){ try{ return JSON.stringify(v===undefined?null:v); }catch(e){ return ''; } }
+
+/* id 목록 병합: base(마지막 동기화 상태) 기준으로 한쪽만 바뀐 것은 그쪽을,
+   둘 다 바뀐 것은 이 폰 기록을 살립니다. 삭제도 그대로 전파됩니다. */
+function mergeListBy(baseArr, localArr, cloudArr){
+  var b = {}, l = {}, c = {}, order = [];
+  function idx(arr, map){ (arr||[]).forEach(function(it){ if(it && it.id && !map[String(it.id)]) map[String(it.id)] = it; }); }
+  idx(baseArr, b); idx(localArr, l); idx(cloudArr, c);
+  (localArr||[]).forEach(function(it){ if(it && it.id){ var k = String(it.id); if(order.indexOf(k) < 0) order.push(k); } });
+  (cloudArr||[]).forEach(function(it){ if(it && it.id){ var k = String(it.id); if(order.indexOf(k) < 0) order.push(k); } });
+  var out = [], conflicts = 0;
+  order.forEach(function(k){
+    var bi = b[k], li = l[k], ci = c[k];
+    var bj = bi ? jstr(bi) : null, lj = li ? jstr(li) : null, cj = ci ? jstr(ci) : null;
+    var pick = null;
+    if(li && ci){
+      if(lj === cj) pick = li;
+      else if(lj === bj) pick = ci;              /* 클라우드에서만 바꿈 */
+      else if(cj === bj) pick = li;              /* 이 폰에서만 바꿈 */
+      else { pick = li; conflicts++; }           /* 둘 다 바꿈 → 이 폰 우선 보존 */
+    } else if(li){
+      if(!(bi && lj === bj)) pick = li;          /* 클라우드에서 지운 항목은 지움 */
+    } else if(ci){
+      if(!(bi && cj === bj)) pick = ci;          /* 이 폰에서 지운 항목은 지움 */
+    }
+    if(pick) out.push(pick);
+  });
+  return {list:out, conflicts:conflicts};
+}
+/* base(없을 수 있음) · 이 폰 · 클라우드를 합쳐 하나의 기록으로 */
+function mergeStates(base, local, cloud){
+  var b = syncData(base ? normalize(base) : {items:[], records:[]});
+  var l = syncData(local), c = syncData(cloud);
+  var it = mergeListBy(b.items, l.items, c.items);
+  var rc = mergeListBy(b.records, l.records, c.records);
+  var out = {version:1, items:it.list, records:rc.list};
+  var alive = {};
+  out.items.forEach(function(x){ alive[x.id] = 1; });
+  out.records = out.records.filter(function(r){ return !!alive[r.itemId]; });
+  out.records.sort(function(x,y){
+    if(x.date !== y.date) return x.date < y.date ? -1 : 1;
+    return byIdAsc(x, y);
+  });
+  out.conflicts = it.conflicts + rc.conflicts;
+  return out;
 }
 
 /* ── Firebase SDK: 필요한 순간에만, 실패해도 앱은 그대로 ── */
@@ -1257,18 +1598,64 @@ function cloudDocRef(db, code){
   try{ return db.collection('notes').doc(code + SYNC_SUFFIX); }catch(e){ return null; }
 }
 
-/* ── 올리기 ── */
+/* ── 올리기 ──
+   · 문서를 통째로 덮어쓰지 않고, 트랜잭션 안에서 최신본을 읽어 3-way 병합한 뒤 씁니다.
+     (오프라인 중 예약된 예전 내용이 다른 기기의 새 기록을 지우는 일을 막음) */
 function doPush(){
-  if(sync.status !== 'on' || !sync.doc) return false;
-  var payload;
-  try{ payload = JSON.stringify(state); }catch(e){ return false; }
+  if(sync.status !== 'on' || !sync.doc || !sync.db) return false;
+  if(sync.pushTimer){ clearTimeout(sync.pushTimer); sync.pushTimer = null; }
+  var db = sync.db, ref = sync.doc;
+  var seq = ++sync.pushSeq;
+  var from = null, to = null, pushedSig = null;
+
+  function txBody(tx){
+    return tx.get(ref).then(function(snap){
+      var remote = null;
+      if(snap && snap.exists){
+        var d = snap.data() || {};
+        if(d.updatedBy !== sync.deviceId){
+          try{ remote = normalize(JSON.parse(String(d.payload || 'null'))); }catch(e){ remote = null; }
+        }
+      }
+      var next = state;
+      if(remote && syncSig(remote) !== syncSig(state)){
+        var m = mergeStates(sync.base, state, remote);
+        var conflicts = m.conflicts || 0;
+        delete m.conflicts;
+        if(syncSig(m) !== syncSig(state)){ next = m; if(conflicts) pendingMergeToast = true; }
+      }
+      from = state; to = next;
+      var body;
+      try{ body = JSON.stringify(normalize(next)); }catch(e){ throw e; }
+      pushedSig = syncSig(next);
+      tx.set(ref, {
+        payload: body,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: sync.deviceId
+      });
+    });
+  }
   try{
-    sync.doc.set({
-      payload: payload,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedBy: sync.deviceId
-    }).then(function(){
+    db.runTransaction(txBody).then(function(){
+      if(seq !== sync.pushSeq) return;
       sync.lastPush = new Date().toISOString();
+      sync.err = '';
+      /* 병합된 상대 내용을 이 폰에도 반영 (그 사이 로컬이 또 바뀌지 않았을 때만) */
+      try{
+        if(to && from && syncSig(state) === syncSig(from) && syncSig(to) !== syncSig(from)){
+          state = to; saveLocal(); renderAll();
+        }
+      }catch(e){}
+      var now = null;
+      try{ now = syncSig(state); }catch(e){}
+      if(now === pushedSig){
+        sync.dirty = false;
+        setBase(state);
+        writeSyncMeta(sync.code);
+      } else {
+        cloudPush();                     /* 올리는 사이 또 바뀜 → 한 번 더 */
+      }
+      if(pendingMergeToast){ pendingMergeToast = false; toast('☁️ 다른 기기 기록을 합쳐서 올렸어요'); }
       paintCloud();
     }, function(err){
       sync.err = (err && err.message) ? err.message : '클라우드에 올리지 못했어요';
@@ -1280,20 +1667,73 @@ function doPush(){
 function cloudPush(){
   if(sync.status !== 'on' || !sync.doc) return;
   clearTimeout(sync.pushTimer);
-  sync.pushTimer = setTimeout(doPush, 300);
+  sync.pushTimer = setTimeout(function(){ sync.pushTimer = null; doPush(); }, 300);
+}
+/* 화면을 떠나기 직전: 대기 중인 디바운스 업로드를 즉시 보냅니다 */
+function flushPush(){
+  if(sync.pushTimer){ clearTimeout(sync.pushTimer); sync.pushTimer = null; }
+  if(sync.dirty && sync.status === 'on' && sync.doc) return doPush();
+  return false;
 }
 
-/* ── 받기 ── */
-function applyCloudData(data, quiet){
+/* ── 받기 ──
+   · force=true: 사용자가 직접 '☁️ 클라우드 불러오기'를 고른 경우 → 클라우드 내용으로 대체
+   · 기본: 이 폰의 아직 못 올린 변경(dirty)을 살리며 3-way 병합 */
+function applyCloudData(data, quiet, force){
   if(!data || typeof data !== 'object') return false;
-  var next;
-  try{ next = normalize(data); }catch(e){ return false; }
-  if(syncSig(next) === syncSig(state)) return false;
-  state = next;
+  var cloud;
+  try{ cloud = normalize(data); }catch(e){ return false; }
+  var cloudSig = syncSig(cloud);
+
+  if(force){
+    var forceChanged = (cloudSig !== syncSig(state));
+    if(forceChanged){ state = cloud; saveLocal(); renderAll(); }
+    setBase(cloud);
+    sync.dirty = false;
+    writeSyncMeta(sync.code);
+    sync.lastPull = new Date().toISOString();
+    paintCloud();
+    if(forceChanged && !quiet) toast('☁️ 클라우드 기록을 불러왔어요');
+    return forceChanged;
+  }
+
+  /* 편집 중인 시트가 열려 있으면 폼을 덮어쓰지 않고 잠시 보류 */
+  if(formSheetOpen()){
+    sync.deferred = data;
+    paintCloud();
+    if(!quiet) toast('☁️ 다른 기기 변경이 있어요 · 이 화면을 닫으면 반영돼요');
+    return false;
+  }
+
+  var merged = mergeStates(sync.base, state, cloud);
+  var conflicts = merged.conflicts || 0;
+  delete merged.conflicts;
+  var localSig = syncSig(state);
+  var mergedSig = syncSig(merged);
+  sync.lastPull = new Date().toISOString();
+
+  if(mergedSig === localSig){
+    /* 이 폰이 이미 앞서 있거나 같음 → 표시만 정리하고 필요하면 이 폰 기록을 올림 */
+    setBase(cloud);
+    sync.dirty = (localSig !== cloudSig);
+    writeSyncMeta(sync.code);
+    if(sync.dirty) cloudPush();
+    paintCloud();
+    return false;
+  }
+
+  state = merged;
   saveLocal();
   renderAll();
-  sync.lastPull = new Date().toISOString();
-  if(!quiet) toast('☁️ 다른 기기에서 바뀐 내용을 불러왔어요');
+  setBase(cloud);
+  sync.dirty = (mergedSig !== cloudSig);
+  writeSyncMeta(sync.code);
+  if(sync.dirty) cloudPush();
+  paintCloud();
+  if(!quiet){
+    toast(conflicts ? '☁️ 다른 기기 기록을 합쳤어요 · 겹친 항목은 이 폰 기록을 남겼어요'
+                    : '☁️ 다른 기기에서 바뀐 내용을 불러왔어요');
+  }
   return true;
 }
 function cloudSubscribe(){
@@ -1304,11 +1744,17 @@ function cloudSubscribe(){
     sync.unsub = sync.doc.onSnapshot(function(snap){
       if(!snap) return;
       if(snap.metadata && snap.metadata.hasPendingWrites) return;
-      if(!snap.exists) return;
+      if(!snap.exists) return;                        /* delete 권한이 없어 사라질 일은 없음 */
       var d = snap.data() || {};
-      if(d.updatedBy === sync.deviceId){ paintCloud(); first = false; return; }
+      if(d.updatedBy === sync.deviceId){               /* 내가 올린 그대로 */
+        paintCloud(); first = false;
+        if(sync.dirty) cloudPush();                    /* 못 올린 변경이 있으면 마저 올림 */
+        return;
+      }
       var data = null;
       try{ data = JSON.parse(String(d.payload||'null')); }catch(e){}
+      /* 첫 스냅샷·재연결에서도 이 폰에 아직 못 올린 변경(dirty)이 있으면
+         무조건 덮어쓰지 않고 base 기준으로 합칩니다. */
       applyCloudData(data, first);
       first = false;
       paintCloud();
@@ -1336,7 +1782,9 @@ function connectCloud(rawCode, silent){
     if(!silent) toast('가족 코드는 영문·숫자로 8자 이상이어야 해요');
     return;
   }
+  if(sync.code && sync.code !== code) clearBase(sync.code);
   sync.code = code;
+  if(!sync.base) sync.base = loadBase(code);
   sync.status = 'connecting'; sync.err = '';
   paintCloud();
   loadFirebase(function(err){
@@ -1358,23 +1806,28 @@ function connectCloud(rawCode, silent){
     ref.get().then(function(snap){
       if(!snap.exists){
         return ref.set({
-          payload: JSON.stringify(state),
+          payload: JSON.stringify(normalize(state)),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedBy: sync.deviceId
         }).then(function(){
           sync.doc = ref;
           sync.lastPush = new Date().toISOString();
+          sync.err = '';
+          setBase(state);
+          sync.dirty = false;
+          writeSyncMeta(sync.code);
           finishConnect(silent, '새 가족 공유를 시작했어요');
         });
       }
       var data = null;
       try{ data = JSON.parse(String((snap.data()||{}).payload||'null')); }catch(e){}
       if(silent){
+        /* 앱을 열 때의 자동 재연결: 첫 스냅샷에서 base 기준으로 병합합니다 */
         sync.doc = ref;
         finishConnect(true, null);
         return;
       }
-      askCloudMerge(ref, syncSummary(data ? normalize(data) : null), syncSummary(state));
+      openMergeSheet(ref, data);
     }).catch(function(err){
       var c = (err && err.code) ? String(err.code) : '';
       sync.status = 'off';
@@ -1384,22 +1837,28 @@ function connectCloud(rawCode, silent){
     });
   });
 }
-function askCloudMerge(ref, cloudTxt, mineTxt){
+/* 연결 시 어느 쪽을 남길지 — 양쪽 건수와 사라지는 쪽을 한 화면에 적습니다 */
+function openMergeSheet(ref, cloudData){
   sync.pendingRef = ref;
-  askConfirm('☁️ 가족 공유 연결',
-    '클라우드에 이미 저장된 기록이 있어요.\n\n☁️ 클라우드 · ' + cloudTxt + '\n📱 이 폰 · ' + mineTxt + '\n\n클라우드 기록을 이 폰으로 불러올까요?',
-    '☁️ 클라우드 불러오기',
-    function(){ mergeTakeCloud(); },
-    function(){
-      /* 취소 = 클라우드를 덮어쓰지 않고, 이 폰 기록을 올릴지 한 번 더 묻는다 */
-      setTimeout(function(){
-        askConfirm('📱 이 폰 기록 올리기',
-          '그럼 이 폰 기록을 클라우드에 올릴까요?\n\n이 폰 · ' + mineTxt + '\n\n올리면 클라우드에 있던 기록(' + cloudTxt + ')이 이 폰 기록으로 바뀌어요.',
-          '이 폰 기록 올리기',
-          function(){ mergeTakePhone(); },
-          function(){ cancelConnect(); });
-      }, 80);
-    });
+  var cloud = null;
+  try{ cloud = cloudData ? normalize(cloudData) : null; }catch(e){ cloud = null; }
+  mergePending = {ref:ref, cloud:cloud};
+  var mine = {items:state.items, records:state.records};
+  var cl = cloud || {items:[], records:[]};
+  $('mrgCloud').textContent = cloud ? countText(cl) : '내용 없음';
+  $('mrgPhone').textContent = countText(mine);
+  var losePhone = onlyRecordCount(mine.records, cl.records);
+  var losePhoneItems = onlyItemCount(mine.items, cl.items);
+  var loseCloud = onlyRecordCount(cl.records, mine.records);
+  var loseCloudItems = onlyItemCount(cl.items, mine.items);
+  $('mrgWarn').innerHTML =
+      '⚠️ [☁️ 클라우드 불러오기] → ' + (losePhone || losePhoneItems
+        ? '이 폰에만 있는 ' + (losePhoneItems ? '항목 ' + losePhoneItems + '개' : '') + (losePhoneItems && losePhone ? ' · ' : '') + (losePhone ? '기록 ' + losePhone + '건' : '') + '이 사라져요'
+        : '이 폰 기록이 클라우드와 같은 내용으로 바뀌어요')
+    + '<br>⚠️ [📱 이 폰 기록 올리기] → ' + (loseCloud || loseCloudItems
+        ? '클라우드에만 있는 ' + (loseCloudItems ? '항목 ' + loseCloudItems + '개' : '') + (loseCloudItems && loseCloud ? ' · ' : '') + (loseCloud ? '기록 ' + loseCloud + '건' : '') + '이 사라져요'
+        : '클라우드에 있던 내용이 이 폰 기록으로 바뀌어요');
+  openSheet('sheetMerge');
 }
 function mergeTakeCloud(){
   var ref = sync.pendingRef;
@@ -1409,7 +1868,7 @@ function mergeTakeCloud(){
     if(!snap.exists){ mergeTakePhone(); return; }
     var data = null;
     try{ data = JSON.parse(String((snap.data()||{}).payload||'null')); }catch(e){}
-    var ok = applyCloudData(data, true);
+    var ok = applyCloudData(data, true, true);
     sync.doc = ref; sync.pendingRef = null;
     finishConnect(false, ok ? '클라우드 기록을 이 폰에 불러왔어요' : '클라우드 기록이 이 폰과 같았어요');
     renderSet();
@@ -1425,12 +1884,15 @@ function mergeTakePhone(){
   sync.status = 'connecting'; sync.err = ''; paintCloud();
   try{
     ref.set({
-      payload: JSON.stringify(state),
+      payload: JSON.stringify(normalize(state)),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedBy: sync.deviceId
     }).then(function(){
       sync.doc = ref; sync.pendingRef = null;
       sync.lastPush = new Date().toISOString();
+      setBase(state);
+      sync.dirty = false;
+      writeSyncMeta(sync.code);
       finishConnect(false, '이 폰 기록을 클라우드에 올렸어요');
       renderSet();
     }, function(err){
@@ -1444,15 +1906,17 @@ function mergeTakePhone(){
 }
 function cancelConnect(){
   sync.pendingRef = null; sync.doc = null; sync.code = ''; sync.status = 'off'; sync.err = '';
+  mergePending = null;
   writeSyncMeta('');
   paintCloud();
   toast('연결을 그만뒀어요 · 이 폰 기록은 그대로예요');
 }
 function disconnectCloud(){
   if(sync.unsub){ try{ sync.unsub(); }catch(e){} sync.unsub = null; }
-  clearTimeout(sync.pushTimer);
+  clearTimeout(sync.pushTimer); sync.pushTimer = null;
+  if(sync.code) clearBase(sync.code);
   sync.status = 'off'; sync.code = ''; sync.err = ''; sync.doc = null; sync.db = null; sync.pendingRef = null;
-  sync.lastPush = null; sync.lastPull = null;
+  sync.lastPush = null; sync.lastPull = null; sync.dirty = false; sync.base = null; sync.deferred = null;
   writeSyncMeta('');
   paintCloud();
   toast('☁️ 연결을 해제했어요 · 이 폰 기록은 그대로 있어요');
@@ -1464,7 +1928,8 @@ function syncBoxHtml(){
     return '<div class="sync-badge">☁️ 실시간 연결됨</div>' +
       '<div class="sync-line">가족 코드 <span class="sync-code">' + esc(sync.code) + '</span></div>' +
       '<div class="sync-line" id="syncLast">' + esc(lastSyncText()) + '</div>' +
-      '<div class="sync-line">이 폰에서 고친 내용이 바로 클라우드에 올라가고, 같은 코드를 넣은 다른 기기에도 자동으로 나타나요.</div>' +
+      (sync.err ? '<div class="sync-line" style="color:var(--over-ink)">' + esc(sync.err) + '</div>' : '') +
+      '<div class="sync-line">이 폰에서 고친 내용이 바로 클라우드에 올라가고, 같은 코드를 넣은 다른 기기에도 자동으로 나타나요. 두 기기가 같이 고쳐도 서로 지우지 않고 합쳐요.</div>' +
       '<div class="set-row" style="margin-top:11px">' +
         '<button class="set-btn" data-sync="push">지금 올리기</button>' +
         '<button class="set-btn danger" data-sync="off">연결 해제</button>' +
@@ -1480,6 +1945,7 @@ function syncBoxHtml(){
     : '<div class="sync-badge" style="background:var(--gold-cream);color:#A08A72;border-color:#EEE0CB">📍 이 폰에만 저장 중</div>';
   var err = (sync.err)
     ? '<div class="sync-line" style="color:var(--over-ink)">' + esc(sync.err) + '</div>'
+      + (sync.code ? '<div class="set-row" style="margin-top:8px"><button class="set-btn" data-sync="connect">다시 연결</button></div>' : '')
     : '<div class="sync-line">같은 가족 코드를 넣은 기기끼리 기록이 실시간으로 맞춰져요. 비워 두면 지금처럼 이 폰에만 저장돼요.</div>';
   return head +
     '<label class="f-lbl" style="margin-top:10px">가족 공유 코드</label>' +
@@ -1515,11 +1981,28 @@ function initCloud(){
   var meta = readSyncMeta();
   sync.deviceId = meta.deviceId;
   sync.code = cleanCode(meta.code);
+  sync.dirty = meta.dirty === true;
+  if(sync.code.length >= 8) sync.base = loadBase(sync.code);
+  writeSyncMeta(sync.code);
   paintCloud();
   if(sync.code.length >= 8) connectCloud(sync.code, true);
 }
 
 /* ─────────── 이벤트 ─────────── */
+/* ─────────── 달력 월 이동 · 선택일 정리 ─────────── */
+function calMonthKey(){ return calY + '-' + pad2(calM+1); }
+function calSelInMonth(){ return !!selDate && selDate.slice(0,7) === calMonthKey(); }
+function moveMonth(delta){
+  calM += delta;
+  if(calM < 0){ calM = 11; calY--; }
+  if(calM > 11){ calM = 0; calY++; }
+  /* 선택일이 새 달 밖으로 나가면: 이번 달이면 오늘로, 아니면 선택 해제 */
+  if(selDate && !calSelInMonth()){
+    selDate = (todayStr().slice(0,7) === calMonthKey()) ? todayStr() : null;
+  }
+  renderCal();
+}
+
 function bind(){
   document.querySelectorAll('.tab').forEach(function(b){
     b.addEventListener('click', function(){ switchTab(b.dataset.tab); });
@@ -1539,6 +2022,7 @@ function bind(){
       if(it){
         openRecordSheet(todayStr(), null);
         $('recItem').value = it.id;
+        updateDupNote();
       }
       return;
     }
@@ -1548,12 +2032,8 @@ function bind(){
   $('btnAddItem').addEventListener('click', function(){ openItemSheet(null); });
 
   /* 달력 */
-  $('calPrev').addEventListener('click', function(){
-    calM--; if(calM < 0){ calM = 11; calY--; } renderCal();
-  });
-  $('calNext').addEventListener('click', function(){
-    calM++; if(calM > 11){ calM = 0; calY++; } renderCal();
-  });
+  $('calPrev').addEventListener('click', function(){ moveMonth(-1); });
+  $('calNext').addEventListener('click', function(){ moveMonth(1); });
   $('calGrid').addEventListener('click', function(e){
     var cell = e.target.closest('[data-date]');
     if(cell){
@@ -1576,8 +2056,18 @@ function bind(){
     var del = e.target.closest('[data-rdel]');
     if(del) confirmDeleteRecord(del.dataset.rdel);
   });
+  /* 상세 시트의 [수정]/[삭제] (예전에는 리스너가 없어 반응이 없었음) */
+  $('dtTimeline').addEventListener('click', function(e){
+    var ed = e.target.closest('[data-redit]');
+    if(ed){ openRecordSheet(null, ed.dataset.redit, detailItemId); return; }
+    var del = e.target.closest('[data-rdel]');
+    if(del) confirmDeleteRecord(del.dataset.rdel, detailItemId);
+  });
 
   /* 기록 시트 */
+  $('recItem').addEventListener('change', updateDupNote);
+  $('recDate').addEventListener('change', updateDupNote);
+  $('recDate').addEventListener('input', updateDupNote);
   $('recCancel').addEventListener('click', closeSheets);
   $('recSave').addEventListener('click', saveRecord);
   $('recDelete').addEventListener('click', function(){
@@ -1613,8 +2103,9 @@ function bind(){
   /* 상세 시트 */
   $('dtDone').addEventListener('click', function(){
     closeSheets();
-    openRecordSheet(todayStr(), null);
+    openRecordSheet(todayStr(), null, detailItemId);
     $('recItem').value = detailItemId;
+    updateDupNote();
   });
   $('dtEdit').addEventListener('click', function(){
     closeSheets();
@@ -1634,7 +2125,22 @@ function bind(){
     closeSheets();
     if(cb) cb();
   });
-  $('back').addEventListener('click', closeSheets);
+  $('back').addEventListener('click', function(){
+    /* 병합 선택을 그냥 닫으면 연결을 시작하지 않은 상태로 정리 */
+    if($('sheetMerge').classList.contains('on') && sync.pendingRef){
+      closeSheets();
+      setTimeout(cancelConnect, 30);
+      return;
+    }
+    closeSheets();
+  });
+
+  /* 연결 시 병합 선택 (양쪽 건수 · 사라지는 쪽 안내) */
+  $('mrgTakeCloud').addEventListener('click', function(){ closeSheets(); setTimeout(mergeTakeCloud, 30); });
+  $('mrgTakePhone').addEventListener('click', function(){ closeSheets(); setTimeout(mergeTakePhone, 30); });
+  $('mrgCancel').addEventListener('click', function(){
+    closeSheets(); setTimeout(cancelConnect, 30);
+  });
 
   /* 설정 */
   $('syncBox').addEventListener('click', function(e){
@@ -1675,9 +2181,10 @@ function bind(){
     if(!undoSnapshot) return;
     try{
       state = normalize(JSON.parse(undoSnapshot));
-      undoSnapshot = null;
+      clearUndo();
       save();
       renderAll();
+      renderSet();
       toast('불러오기 전 상태로 되돌렸어요');
     }catch(e){ toast('되돌리기에 실패했어요'); }
   });
@@ -1693,33 +2200,163 @@ function bind(){
     }
     resetArmed = false;
     $('btnReset').textContent = '🗑 전체 초기화';
-    undoSnapshot = JSON.stringify(state);
+    saveUndo();
     state = {version:1, items:[], records:[]};
     save();
     renderAll();
-    toast('전체를 초기화했어요 · 설정에서 되돌릴 수 있어요');
+    toast(sync.status === 'on'
+      ? '전체를 초기화했어요 · 클라우드 다른 기기에도 반영되는 중'
+      : '전체를 초기화했어요 · 설정에서 되돌릴 수 있어요');
   });
 }
 
-function confirmDeleteRecord(rid){
+function confirmDeleteRecord(rid, backItemId){
   askConfirm('기록 삭제', '이 관리 기록을 삭제할까요?\n항목의 마지막 관리일도 함께 되돌아가요.', '삭제', function(){
     state.records = state.records.filter(function(r){ return r.id !== rid; });
     save();
     renderAll();
     toast('기록을 삭제했어요');
+    if(backItemId && itemById(backItemId)) setTimeout(function(){ openDetail(backItemId); }, 40);
   });
 }
+
+/* ─────────── 화면을 떠날 때 · 돌아올 때 ─────────── */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){
+    /* 화면을 떠나기 직전: 대기 중인 업로드를 즉시 전송 */
+    flushPush();
+    return;
+  }
+  renderAll();
+});
+/* 앱이 백그라운드로 갈 때(pagehide)도 디바운스 대기분을 바로 올림 */
+window.addEventListener('pagehide', function(){ flushPush(); });
+/* 인터넷이 돌아오면 끊긴 가족 공유를 한 번 다시 시도 */
+window.addEventListener('online', function(){
+  if(sync.code.length >= 8 && (sync.status === 'error' || sync.status === 'off')) connectCloud(sync.code, true);
+  else flushPush();
+});
+
+/* ───────── 아래로 당겨서 새로고침 ─────────
+   · 맨 위(scrollY<=0)에서, 시트가 닫혀 있을 때만 동작
+   · 70px 이상 당기고 놓으면 클라우드/화면을 새로고침
+   · 일반 스크롤·버튼 탭은 건드리지 않습니다. */
+var PULL_TRIGGER = 70;
+var pull = {on:false, from:0, dy:0, ready:false, busy:false};
+function pullEl(){ return $('pullRefresh'); }
+function atTop(){
+  return (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0) <= 0;
+}
+function pullBusy(){
+  return document.body.classList.contains('sheet-open') || pull.busy;
+}
+function pullReset(){
+  pull.on = false; pull.dy = 0; pull.ready = false;
+  var el = pullEl();
+  if(el && !pull.busy){
+    el.classList.remove('on','ready');
+    el.style.transform = '';
+    el.textContent = '↻ 새로고침';
+  }
+}
+function pullPaint(){
+  var el = pullEl();
+  if(!el) return;
+  el.classList.add('on');
+  el.classList.toggle('ready', pull.ready);
+  el.textContent = pull.ready ? '↻ 놓으면 새로고침' : '↻ 아래로 당겨 새로고침';
+  el.style.transform = 'translate(-50%,' + (-72 + Math.min(80, pull.dy)) + 'px)';
+}
+/* 화면 + 클라우드 새로고침 */
+function refreshNow(){
+  renderAll();
+  if(!(sync.status === 'on' && sync.doc && sync.db)){
+    toast('화면을 새로고침했어요');
+    return;
+  }
+  try{
+    sync.doc.get({source:'server'}).then(function(snap){
+      if(!snap || !snap.exists){ toast('새로고침했어요 · 클라우드에 저장된 내용이 아직 없어요'); return; }
+      var d = snap.data() || {};
+      var data = null;
+      try{ data = JSON.parse(String(d.payload||'null')); }catch(e){}
+      var changed = applyCloudData(data, true);
+      toast(changed ? '☁️ 클라우드에서 최신 내용을 받았어요' : '새로고침했어요 · 이미 최신이에요');
+    }, function(){ toast('화면은 새로고침했어요 · 클라우드 확인은 실패했어요'); });
+  }catch(e){ toast('화면을 새로고침했어요'); }
+}
+document.addEventListener('touchstart', function(ev){
+  if(pullBusy() || ev.touches.length !== 1 || !atTop()){ pull.on = false; return; }
+  pull.on = true; pull.from = ev.touches[0].clientY; pull.dy = 0; pull.ready = false;
+}, {passive:true});
+document.addEventListener('touchmove', function(ev){
+  if(!pull.on || pull.busy) return;
+  var dy = ev.touches[0].clientY - pull.from;
+  if(dy <= 0){
+    if(pull.dy > 0) pullReset();
+    if(dy < -8) pull.on = false;
+    return;
+  }
+  if(!atTop()){ pullReset(); return; }
+  if(ev.cancelable) ev.preventDefault();          /* 당기는 동안만 기본 동작 막음 */
+  pull.dy = dy;
+  pull.ready = (dy >= PULL_TRIGGER);
+  pullPaint();
+}, {passive:false});
+document.addEventListener('touchend', function(){
+  if(!pull.on) return;
+  pull.on = false;
+  if(pull.ready && !pull.busy){
+    pull.busy = true;
+    var el = pullEl();
+    if(el){
+      el.classList.remove('ready');
+      el.classList.add('on','busy');
+      el.textContent = '↻ 새로고침 중...';
+      el.style.transform = 'translate(-50%,8px)';
+    }
+    setTimeout(function(){
+      try{ refreshNow(); }
+      finally{
+        setTimeout(function(){
+          if(el){ el.classList.remove('busy','on'); el.style.transform = ''; el.textContent = '↻ 새로고침'; }
+          pull.busy = false;
+        }, 700);
+      }
+    }, 120);
+    return;
+  }
+  pullReset();
+}, {passive:true});
+document.addEventListener('touchcancel', function(){ pull.on = false; pullReset(); }, {passive:true});
+
+/* 스크롤했을 때만 상단 헤더에 그림자를 줘 내용과 확실히 구분 */
+var topbarEl = document.querySelector('.topbar');
+var stuckTick = false;
+function syncStuck(){
+  stuckTick = false;
+  if(!topbarEl) return;
+  var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+  topbarEl.classList.toggle('stuck', y > 4);
+}
+window.addEventListener('scroll', function(){
+  if(stuckTick) return;
+  stuckTick = true;
+  setTimeout(syncStuck, 80);
+}, {passive:true});
 
 /* ─────────── 시작 ─────────── */
 function init(){
   try{ window.localStorage.setItem('__t','1'); window.localStorage.removeItem('__t'); }
   catch(e){ storeOK = false; $('storageWarn').classList.add('on'); }
   load();
+  loadUndo();
   selDate = todayStr();
   bind();
   renderAll();
   switchTab('home');
   initCloud();
+  syncStuck();
 }
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', init);
