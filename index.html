@@ -10,6 +10,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="favicon.ico?v=3" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
+<link rel="manifest" href="manifest.webmanifest">
 <title>꽃단장 🌸 · 뷰티 케어 캘린더</title>
 <style>
 :root{
@@ -277,6 +278,72 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   opacity:0;pointer-events:none;transition:all .25s ease;max-width:86vw;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── 📅 구글 캘린더 버튼 ── */
+.gcal-btn{display:inline-flex;align-items:center;gap:4px;margin:6px 0 0 19px;padding:5px 10px;border-radius:999px;
+  border:1px solid #E6D6BE;background:var(--gold-cream);color:var(--gold-d);font-size:11px;font-weight:800;
+  cursor:pointer;-webkit-appearance:none;font-family:inherit}
+.gcal-btn:active{background:var(--blush)}
+
+/* ── 스낵바 (저장 직후 버튼 달린 알림) ── */
+.snack{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));z-index:61;
+  transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;transition:all .25s ease;
+  width:min(92vw,420px);display:flex;align-items:center;gap:10px;padding:10px 10px 10px 14px;border-radius:16px;
+  background:rgba(69,52,48,.95);color:#fff;font-size:12.5px;font-weight:700;line-height:1.45;box-shadow:0 8px 24px rgba(69,52,48,.25)}
+.snack.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.snack span{flex:1;min-width:0}
+.snack button{flex:0 0 auto;border:none;border-radius:11px;padding:9px 11px;background:#FBECEA;color:var(--rose-d);
+  font-size:12px;font-weight:800;cursor:pointer;-webkit-appearance:none;font-family:inherit;white-space:nowrap}
+.snack .x{background:transparent;color:#E8D8C9;padding:9px 4px;font-size:15px}
+
+/* ── 🗂 보관함 ── */
+.arch-head{display:flex;align-items:center;justify-content:space-between;width:100%;margin:6px 0 0;padding:11px 14px;
+  border:1px solid var(--line);border-radius:14px;background:#FFFCF8;color:var(--ink-2);font-size:12.5px;font-weight:800;
+  cursor:pointer;-webkit-appearance:none;font-family:inherit}
+.arch-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid #F7F0E7}
+.arch-row:last-child{border-bottom:none}
+.arch-row .nm{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink-2)}
+.arch-row .sub{font-size:11px;color:var(--muted);font-weight:600}
+
+/* ── 🏷 카테고리 ── */
+.cat-row{display:flex;align-items:center;gap:9px;padding:9px 2px;border-bottom:1px solid #F7F0E7}
+.cat-row:last-child{border-bottom:none}
+.cat-row .nm{flex:1;font-size:13px;font-weight:700}
+.cat-row .sub{font-size:11px;color:var(--muted);font-weight:600}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.swatch{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;-webkit-appearance:none;padding:0}
+.swatch.on{box-shadow:0 0 0 2px var(--ink-2)}
+.newcat{margin-top:8px;padding:10px 12px;border:1px dashed #E3CFB3;border-radius:12px;background:#FFFCF8}
+
+/* ── 💸 꾸밈비 통계 ── */
+.yr-nav{display:flex;align-items:center;gap:8px}
+.yr-nav b{font-size:14px;font-weight:800;min-width:56px;text-align:center}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow);min-width:0}
+.kpi span{display:block;font-size:10.5px;font-weight:800;color:var(--muted)}
+.kpi b{display:block;margin-top:3px;font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi em{display:block;margin-top:2px;font-style:normal;font-size:10.5px;font-weight:700;color:var(--ink-2)}
+.mbars{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:150px;margin-top:6px;padding-top:18px}
+.mbar{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+  border:none;background:transparent;padding:0;cursor:pointer;-webkit-appearance:none;font-family:inherit}
+.mbar i{display:block;width:100%;max-width:22px;border-radius:4px 4px 0 0;background:#EBC3C8;min-height:0}
+.mbar.cur i{background:var(--rose-d)}
+.mbar.sel i{background:var(--rose-d);box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--rose)}
+.mbar .v{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9.5px;font-weight:800;color:var(--ink-2);white-space:nowrap}
+.mlabels{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:5px;border-top:1px solid var(--line);padding-top:5px}
+.mlabels span{text-align:center;font-size:10px;font-weight:700;color:var(--muted)}
+.mlabels span.cur{color:var(--rose-d);font-weight:800}
+.hbar-row{padding:8px 0;border-bottom:1px solid #F7F0E7}
+.hbar-row:last-child{border-bottom:none}
+.hbar-top{display:flex;align-items:baseline;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink)}
+.hbar-top .nm{flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.hbar-top .amt{font-weight:800}
+.hbar-top .pct{font-size:11px;color:var(--muted);font-weight:700;min-width:34px;text-align:right}
+.hbar-sub{font-size:11px;color:var(--muted);font-weight:600;margin-top:1px}
+.hbar{height:8px;border-radius:4px;background:#F6EEE6;margin-top:5px;overflow:hidden}
+.hbar i{display:block;height:100%;border-radius:4px}
+.more-btn{display:block;width:100%;margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  color:var(--rose-d);font-size:12.5px;font-weight:800;cursor:pointer;-webkit-appearance:none;font-family:inherit}
+
 @media (min-width:760px){ .app{padding:0 20px} }
 </style>
 </head>
@@ -314,6 +381,31 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     <div class="chips" id="chips"></div>
     <div id="itemList" style="margin-top:12px"></div>
     <div class="add-wrap"><button class="btn-add" id="btnAddItem">＋ 관리 항목 추가</button></div>
+    <div id="archive"></div>
+  </section>
+
+  <!-- ═══════════ 💸 꾸밈비 통계 ═══════════ -->
+  <section id="viewStat" class="hidden">
+    <div class="sec-head">
+      <span class="sec-title">꾸밈비</span>
+      <div class="yr-nav">
+        <button class="cal-nav" id="yrPrev" aria-label="이전 해">‹</button>
+        <b id="yrTitle"></b>
+        <button class="cal-nav" id="yrNext" aria-label="다음 해">›</button>
+      </div>
+    </div>
+    <div class="kpis" id="statKpis"></div>
+    <div class="sec-head"><span class="sec-title">월별 꾸밈비</span><span class="sec-sub" id="mSub">막대를 누르면 그 달 내역</span></div>
+    <div class="card">
+      <div class="mbars" id="mBars"></div>
+      <div class="mlabels" id="mLabels"></div>
+      <div id="mDetail"></div>
+    </div>
+    <div class="sec-head"><span class="sec-title">카테고리별</span><span class="sec-sub" id="catSub"></span></div>
+    <div class="card" id="catBreak"></div>
+    <div class="sec-head"><span class="sec-title">항목별</span><span class="sec-sub">많이 쓴 순</span></div>
+    <div class="card" id="itemBreak"></div>
+    <div class="set-note" style="text-align:center;margin:14px 0 4px">비용을 적은 기록만 더해요 · 오늘 이후 '예정' 기록은 빼고 계산해요</div>
   </section>
 
   <!-- ═══════════ 달력 ═══════════ -->
@@ -331,6 +423,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     <div class="day-list" id="dayList"></div>
     <div class="sec-head"><span class="sec-title">항목별 이력</span><span class="sec-sub" id="tlCount"></span></div>
     <div class="card" id="timeline"></div>
+    <button class="more-btn hidden" id="tlMore">더 보기</button>
   </section>
 
   <!-- ═══════════ 설정 ═══════════ -->
@@ -346,6 +439,15 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
       </div>
       <div class="set-row" style="margin-top:8px">
         <button class="set-btn" id="btnRefresh" style="flex:1 1 100%">↻ 화면·클라우드 새로고침</button>
+      </div>
+    </div>
+    <div class="set-card">
+      <div style="font-size:13px;font-weight:800">🏷 카테고리</div>
+      <div class="set-note" style="margin-top:4px">기본 5개 외에 원하는 분류를 만들 수 있어요. 지우면 그 분류의 항목은 '기타'로 옮겨져요.</div>
+      <div id="catList" style="margin-top:8px"></div>
+      <div class="newcat">
+        <div class="f-row"><input class="f-in" id="setCatName" type="text" maxlength="12" placeholder="예: 왁싱"><button class="set-btn primary" id="setCatAdd" style="flex:0 0 76px">추가</button></div>
+        <div class="swatches" id="setCatSw"></div>
       </div>
     </div>
     <div class="set-card">
@@ -375,6 +477,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
 <nav class="tabbar"><div class="tabbar-in">
   <button class="tab on" data-tab="home"><span class="ic">🌸</span>현황</button>
   <button class="tab" data-tab="cal"><span class="ic">📅</span>달력</button>
+  <button class="tab" data-tab="stat"><span class="ic">💸</span>꾸밈비</button>
   <button class="tab" data-tab="set"><span class="ic">⚙️</span>설정</button>
 </div></nav>
 
@@ -411,6 +514,10 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   <input class="f-in" type="text" id="itName" placeholder="예: 젤네일">
   <label class="f-lbl">카테고리</label>
   <select class="f-in" id="itCat"></select>
+  <div class="newcat hidden" id="itNewCat">
+    <input class="f-in" id="itNewCatName" type="text" maxlength="12" placeholder="새 카테고리 이름 (예: 왁싱)">
+    <div class="swatches" id="itNewCatSw"></div>
+  </div>
   <label class="f-lbl">권장 주기</label>
   <div class="f-row">
     <input class="f-in" type="number" id="itCycleV" min="1" step="1" inputmode="numeric" style="flex:0 0 90px">
@@ -428,6 +535,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     <button class="btn-sub" id="itCancel">취소</button>
     <button class="btn-main" id="itSave">저장</button>
   </div>
+  <button class="btn-sub hidden" id="itHide" style="width:100%;margin-top:10px">🗂 보관함으로 숨기기 (기록은 그대로)</button>
   <button class="btn-del hidden" id="itDelete">이 항목 삭제 (기록도 함께 지워져요)</button>
 </div>
 
@@ -439,6 +547,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
     <button class="set-btn primary" id="dtDone">✓ 오늘 관리했어요</button>
     <button class="set-btn" id="dtEdit">✏️ 항목 수정</button>
   </div>
+  <button class="set-btn hidden" id="dtGcal" style="width:100%;margin:-4px 0 12px">📅 구글 캘린더에 넣기</button>
   <div style="font-size:12px;font-weight:800;color:var(--ink-2);margin:2px 2px 6px">관리 이력</div>
   <div id="dtTimeline"></div>
 </div>
@@ -471,6 +580,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
 
 <div id="pullRefresh" aria-hidden="true">↻ 새로고침</div>
 <div class="toast" id="toast"></div>
+<div class="snack" id="snack" role="status"><span id="snackText"></span><button id="snackBtn"></button><button class="x" id="snackX" aria-label="닫기">✕</button></div>
 
 <script>
 (function(){
@@ -484,8 +594,33 @@ var CATS = [
   {key:'헤어',    color:'#5FB89A'},
   {key:'기타',    color:'#8E9BB0'}
 ];
-var CAT_COLOR = {};
+var CAT_COLOR = {};               /* 기본 5개 색 (사용자 카테고리는 state.cats) */
 CATS.forEach(function(c){ CAT_COLOR[c.key] = c.color; });
+/* 사용자 카테고리 색 후보 — 기본 5색과 겹치지 않는 차분한 색 */
+var CUSTOM_COLORS = ['#D98BB5','#6FA8DC','#C9A227','#7FB069','#E07A5F','#8D6E63','#4DB6AC','#BA68C8'];
+var CAT_NONE = '기타';
+/* 기본 + 사용자 카테고리 목록 [{key, color, id?}] */
+function allCats(){
+  var out = CATS.slice(0, 4);
+  ((state && state.cats) || []).forEach(function(c){ out.push({key:c.name, color:c.color, id:c.id}); });
+  out.push(CATS[4]);                /* '기타'는 항상 맨 끝 */
+  return out;
+}
+function catColor(name){
+  if(CAT_COLOR[name]) return CAT_COLOR[name];
+  var found = null;
+  ((state && state.cats) || []).forEach(function(c){ if(c.name === name) found = c.color; });
+  return found || CAT_COLOR[CAT_NONE];
+}
+function catExists(name){
+  if(CAT_COLOR[name]) return true;
+  return ((state && state.cats) || []).some(function(c){ return c.name === name; });
+}
+function nextCustomColor(){
+  var used = ((state && state.cats) || []).map(function(c){ return c.color; });
+  for(var i = 0; i < CUSTOM_COLORS.length; i++){ if(used.indexOf(CUSTOM_COLORS[i]) < 0) return CUSTOM_COLORS[i]; }
+  return CUSTOM_COLORS[used.length % CUSTOM_COLORS.length];
+}
 
 var PRESETS = [
   {name:'보톡스',        cat:'피부과',  cycleV:4,  cycleU:'m', shop:'', memo:''},
@@ -514,6 +649,7 @@ var undoSnapshot = null;
 var filter = '전체';
 /* 요약 박스(data-stat) → 필터 값. 첫 박스는 '기록이 있는 항목', 나머지는 그 상태만 */
 var STAT_FILTERS = {all:'hasRecord', soon:'soon', over:'over'};
+var STAT_FILTERS_REV = {hasRecord:1, soon:1, over:1};
 /* 항목별 기록 건수 (미래 날짜 예정도 기록으로 샘) */
 function recordCountOf(itemId){
   var n = 0;
@@ -594,13 +730,26 @@ function defaultState(){
   PRESETS.forEach(function(p){
     items.push({id:uid(), name:p.name, cat:p.cat, cycleV:p.cycleV, cycleU:p.cycleU, shop:p.shop, memo:p.memo, createdAt:todayStr()});
   });
-  return {version:1, items:items, records:[]};
+  return {version:1, items:items, records:[], cats:[]};
 }
 function normalize(raw){
   var s = defaultState();
-  var out = {version:1, items:[], records:[]};
+  var out = {version:1, items:[], records:[], cats:[]};
   var byId = {}, nameToId = {}, alias = {};
+  var catOk = {};
+  CATS.forEach(function(c){ catOk[c.key] = 1; });
   if(raw && typeof raw === 'object'){
+    /* 사용자 카테고리: 이름 중복·기본 이름과 겹치는 것은 버림 */
+    var catSeen = {};
+    (Array.isArray(raw.cats) ? raw.cats : []).forEach(function(c){
+      if(!c || typeof c !== 'object') return;
+      var nm = String(c.name==null?'':c.name).trim().slice(0, 12);
+      var cid = String(c.id || ('c' + uid()));
+      if(!nm || catOk[nm] || catSeen[cid]) return;
+      catSeen[cid] = 1; catOk[nm] = 1;
+      var col = /^#[0-9A-Fa-f]{6}$/.test(String(c.color||'')) ? String(c.color) : CUSTOM_COLORS[out.cats.length % CUSTOM_COLORS.length];
+      out.cats.push({id:cid, name:nm, color:col});
+    });
     var items = Array.isArray(raw.items) ? raw.items : [];
     items.forEach(function(it){
       if(!it || typeof it !== 'object') return;
@@ -614,13 +763,14 @@ function normalize(raw){
       out.items.push({
         id: id,
         name: name,
-        cat: CAT_COLOR[it.cat] ? it.cat : '기타',
+        cat: catOk[it.cat] ? it.cat : '기타',
         cycleV: (cv && cv > 0) ? cv : 4,
         cycleU: (it.cycleU==='d'||it.cycleU==='w'||it.cycleU==='m') ? it.cycleU : 'w',
         shop: String(it.shop==null?'':it.shop),
         memo: cleanItemMemo(it.memo),
         createdAt: isDateStr(it.createdAt) ? it.createdAt : todayStr()
       });
+      if(it.hidden === true) out.items[out.items.length-1].hidden = true;   /* 보관함 (숨김일 때만 표시) */
       byId[id] = 1; nameToId[name] = id;
     });
     var recs = Array.isArray(raw.records) ? raw.records : [];
@@ -651,7 +801,7 @@ function normalize(raw){
   }
   if(out.items.length === 0 && !(raw && Array.isArray(raw.items) && raw.items.length === 0)){
     /* 프리셋 없이 비워 달라고 한 경우(빈 items 배열)는 존중, 그 외 비정상 입력은 프리셋 */
-    if(raw && Array.isArray(raw.items)){ out = {version:1, items:[], records:out.records}; }
+    if(raw && Array.isArray(raw.items)){ out = {version:1, items:[], records:out.records, cats:out.cats}; }
     else { out = s; }
   }
   out.records.sort(function(a,b){
@@ -837,9 +987,15 @@ function scrollToItemList(){
   try{ el.scrollIntoView({behavior:'smooth', block:'start'}); }
   catch(e){ el.scrollIntoView(true); }
 }
+/* 보관함에 넣지 않은(=현황에 보이는) 항목 */
+function activeItems(){ return state.items.filter(function(it){ return !it.hidden; }); }
+function hiddenItems(){ return state.items.filter(function(it){ return !!it.hidden; }); }
+var archOpen = false;
 function renderChips(){
-  var list = ['전체','피부과','속눈썹','네일·패디','헤어','기타','갈 때 된 것만'];
-  var need = state.items.filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over'; }).length;
+  var list = ['전체'].concat(allCats().map(function(c){ return c.key; }), ['갈 때 된 것만']);
+  /* 지워진 카테고리를 보고 있었다면 '전체'로 */
+  if(list.indexOf(filter) < 0 && !STAT_FILTERS_REV[filter]) filter = '전체';
+  var need = activeItems().filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over'; }).length;
   var html = '';
   list.forEach(function(c){
     var label = (c === '갈 때 된 것만' && need) ? (c + ' ' + need) : c;
@@ -849,7 +1005,7 @@ function renderChips(){
   $('chips').innerHTML = html;
 }
 function visibleItems(){
-  var arr = state.items.slice();
+  var arr = activeItems();
   if(filter === 'soon' || filter === 'over'){
     arr = arr.filter(function(it){ return statusOf(it).key === filter; });
   } else if(filter === 'hasRecord'){
@@ -875,8 +1031,9 @@ function visibleItems(){
 function renderItems(){
   var arr = visibleItems();
   var host = $('itemList');
-  if(state.items.length === 0){
-    host.innerHTML = '<div class="card empty-box">아직 관리 항목이 없어요.<br>아래 ＋ 버튼에서 첫 항목을 추가해 보세요 🌸</div>';
+  renderArchive();
+  if(activeItems().length === 0){
+    host.innerHTML = '<div class="card empty-box">' + (state.items.length ? '모든 항목이 보관함에 있어요.<br>아래 보관함에서 꺼내거나 새 항목을 추가해 보세요 🌸' : '아직 관리 항목이 없어요.<br>아래 ＋ 버튼에서 첫 항목을 추가해 보세요 🌸') + '</div>';
     $('filterCount').textContent = '';
     return;
   }
@@ -907,7 +1064,7 @@ function renderItems(){
                  + (it.memo ? '<div class="item-shop">📝 ' + esc(it.memo) + '</div>' : '');
     html += '<div class="item-card">'
       + '<div class="item-top">'
-      +   '<span class="cat-dot" style="background:' + CAT_COLOR[it.cat] + '"></span>'
+      +   '<span class="cat-dot" style="background:' + catColor(it.cat) + '"></span>'
       +   '<div class="item-name">' + esc(it.name) + '</div>'
       +   '<span class="badge ' + meta.cls + '">' + meta.text + '</span>'
       +   '<button type="button" class="item-edit" data-edit="' + esc(it.id) + '" aria-label="' + esc(it.name) + ' 항목 수정·삭제" title="항목 수정·삭제">✎</button>'
@@ -916,6 +1073,7 @@ function renderItems(){
       + '<div class="dplus">' + dplus(st) + '</div>'
       + (dueSub ? '<div class="dplus-sub">' + esc(dueSub) + '</div>' : '')
       + (st.last && st.planned ? '<div class="item-plan">📅 예정 ' + esc(fmtDate(st.planned.date)) + ' · D-' + st.planIn + '</div>' : '')
+      + (gcalTarget(it) ? '<button type="button" class="gcal-btn" data-gcal="' + esc(it.id) + '">📅 ' + (st.planned ? '예약일' : '권장일') + ' 구글 캘린더에 넣기</button>' : '')
       + shopLine
       + '<div class="item-actions">'
       +   '<button class="btn-done" data-done="' + esc(it.id) + '">오늘 관리했어요 ✓</button>'
@@ -925,12 +1083,44 @@ function renderItems(){
   });
   host.innerHTML = html;
 }
+/* 🗂 보관함: 숨긴 항목 목록 (기록은 그대로, 달력·통계에도 계속 보임) */
+function renderArchive(){
+  var host = $('archive');
+  if(!host) return;
+  var arr = hiddenItems();
+  if(arr.length === 0){ host.innerHTML = ''; archOpen = false; return; }
+  var html = '<button class="arch-head" id="archToggle" aria-expanded="' + (archOpen?'true':'false') + '">'
+    + '<span>🗂 보관함 ' + arr.length + '개</span><span>' + (archOpen ? '접기 ▴' : '펼치기 ▾') + '</span></button>';
+  if(archOpen){
+    html += '<div class="card" style="padding:4px 4px;margin-top:8px">';
+    arr.forEach(function(it){
+      var last = lastDoneOf(it.id, todayStr());
+      html += '<div class="arch-row"><span class="cat-dot" style="margin-top:0;background:' + catColor(it.cat) + '"></span>'
+        + '<div class="nm">' + esc(it.name) + '<div class="sub">' + esc(it.cat) + ' · 기록 ' + recordCountOf(it.id) + '건'
+        + (last ? ' · 마지막 ' + esc(fmtDate(last.date)) : '') + '</div></div>'
+        + '<button class="mini-btn" data-unhide="' + esc(it.id) + '">꺼내기</button></div>';
+    });
+    html += '</div>';
+  }
+  host.innerHTML = html;
+}
+function setHidden(itemId, hidden){
+  var name = '';
+  state.items.forEach(function(it){
+    if(it.id !== itemId) return;
+    name = it.name;
+    if(hidden) it.hidden = true; else delete it.hidden;
+  });
+  save();
+  renderAll();
+  toast(hidden ? ('"' + name + '"을(를) 보관함에 넣었어요 🗂') : ('"' + name + '"을(를) 다시 꺼냈어요 🌸'));
+}
 function renderHome(){
   var t = todayStr();
   var d = parseD(t);
   $('heroDate').textContent = (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' + ['일','월','화','수','목','금','토'][d.getDay()] + ' · 오늘의 꽃단장';
   var soon=0, over=0, plan=0, recorded=0;
-  state.items.forEach(function(it){
+  activeItems().forEach(function(it){
     var st = statusOf(it);
     var k = st.key;
     if(k==='soon') soon++;
@@ -940,18 +1130,19 @@ function renderHome(){
   });
   $('statTotal').textContent = recorded;
   /* 전체 항목 수를 옆에 작게 붙여 "3 / 8"처럼 보이게 (헤더의 '항목 8'과 헷갈리지 않도록) */
-  $('statTotalOf').textContent = state.items.length ? (' / ' + state.items.length) : '';
+  var nAct = activeItems().length;
+  $('statTotalOf').textContent = nAct ? (' / ' + nAct) : '';
   $('statSoon').textContent = soon;
   $('statOver').textContent = over;
   var dd = $('heroDday');
   if(dd) dd.textContent = plan ? ('📅 예정 ' + plan + '건') : '';
   var note;
-  if(state.items.length === 0) note = '관리 항목을 추가하면 마지막 관리일과 경과일을 자동으로 정리해 드려요.';
+  if(nAct === 0) note = '관리 항목을 추가하면 마지막 관리일과 경과일을 자동으로 정리해 드려요.';
   else if(over > 0) note = '관리 시기가 지난 항목 ' + over + '개가 있어요. 오늘 살짝 챙겨볼까요?';
   else if(soon > 0) note = '슬슬 갈 때가 된 항목 ' + soon + '개가 있어요. 예약 잡기 좋은 날이에요.';
   else note = '관리할 때가 된 항목은 없어요. 여유를 누려요 🌷';
   $('heroNote').textContent = note;
-  $('topSummary').textContent = '항목 ' + state.items.length + ' · 기록 ' + state.records.length + '건';
+  $('topSummary').textContent = '항목 ' + nAct + ' · 기록 ' + state.records.length + '건';
   renderChips();
   renderItems();
   renderStatBoxes();
@@ -996,15 +1187,15 @@ function renderCal(){
     var dots = '';
     cats.slice(0,4).forEach(function(ck){
       dots += future
-        ? '<i style="background:transparent;box-shadow:inset 0 0 0 1.5px ' + CAT_COLOR[ck] + '"></i>'
-        : '<i style="background:' + CAT_COLOR[ck] + '"></i>';
+        ? '<i style="background:transparent;box-shadow:inset 0 0 0 1.5px ' + catColor(ck) + '"></i>'
+        : '<i style="background:' + catColor(ck) + '"></i>';
     });
-    if(cats.length > 4) dots += '<i style="background:' + (future ? 'transparent' : CAT_COLOR['기타']) + (future ? ';box-shadow:inset 0 0 0 1.5px ' + CAT_COLOR['기타'] : '') + '"></i>';
+    if(cats.length > 4) dots += '<i style="background:' + (future ? 'transparent' : catColor('기타')) + (future ? ';box-shadow:inset 0 0 0 1.5px ' + catColor('기타') : '') + '"></i>';
     var cls = 'cal-cell' + (c.out ? ' out' : '') + (ds === today ? ' today' : '') + (ds === selDate ? ' sel' : '');
     html += '<button class="' + cls + '" data-date="' + ds + '"><span class="d">' + c.d + '</span><span class="cal-dots">' + dots + '</span></button>';
   });
   $('calGrid').innerHTML = html;
-  var leg = CATS.map(function(c){
+  var leg = allCats().map(function(c){
     var used = state.records.some(function(r){
       var it = itemById(r.itemId);
       return it && it.cat === c.key;
@@ -1029,7 +1220,7 @@ function recCardHtml(r){
   var stars = r.rate > 0 ? '<span class="stars">' + '★'.repeat(r.rate) + '☆'.repeat(5-r.rate) + '</span>' : '';
   var plan = r.date > todayStr() ? '<span class="badge soon" style="font-size:10px;padding:2px 8px">예정</span>' : '';
   var html = '<div class="rec-card">'
-    + '<div class="rec-top"><span class="cat-dot" style="background:' + (it ? CAT_COLOR[it.cat] : CAT_COLOR['기타']) + '"></span>'
+    + '<div class="rec-top"><span class="cat-dot" style="background:' + (it ? catColor(it.cat) : catColor('기타')) + '"></span>'
     + '<span class="rec-name">' + esc(it ? it.name : '삭제된 항목') + '</span>' + plan + stars + '</div>'
     + (bits.length ? '<div class="rec-meta">' + bits.join('<span class="sep">·</span>') + '</div>' : '')
     + (r.memo ? '<div class="rec-memo">' + esc(r.memo) + '</div>' : '')
@@ -1062,17 +1253,20 @@ function renderDayList(){
   }
   host.innerHTML = html;
 }
+var TL_STEP = 30;
+var tlLimit = TL_STEP;            /* 항목별 이력에 보여 줄 개수 ([더 보기]로 30건씩 늘림) */
 function renderTimeline(){
   var host = $('timeline');
   var recs = recordsDesc();
   $('tlCount').textContent = '최근 순 ' + recs.length + '건';
   if(recs.length === 0){
+    $('tlMore').classList.add('hidden');
     host.innerHTML = '<div class="empty-box" style="padding:20px">아직 관리 기록이 없어요.<br>현황 탭에서 "오늘 관리했어요 ✓"를 눌러보세요.</div>';
     return;
   }
   var today = todayStr();
   var html = '';
-  recs.slice(0, 30).forEach(function(r){
+  recs.slice(0, tlLimit).forEach(function(r){
     var it = itemById(r.itemId);
     var bits = [];
     if(r.date > today) bits.push('<span style="color:var(--gold-d);font-weight:800">예정</span>');
@@ -1084,13 +1278,200 @@ function renderTimeline(){
       + '<span class="tl-body"><b style="color:var(--ink)">' + esc(it ? it.name : '') + '</b>'
       + (bits.length ? '<span class="sep">·</span>' + bits.join('<span class="sep">·</span>') : '') + '</span></div>';
   });
-  if(recs.length > 30) html += '<div class="set-note" style="text-align:center">최근 30건만 보여요 · 전체는 백업에서 확인</div>';
   host.innerHTML = html;
+  var more = $('tlMore');
+  var rest = recs.length - tlLimit;
+  more.classList.toggle('hidden', rest <= 0);
+  if(rest > 0) more.textContent = '더 보기 (' + Math.min(rest, TL_STEP) + '건 · 남은 ' + rest + '건) ▾';
+}
+
+/* ─────────── 💸 꾸밈비 통계 ─────────── */
+var statY = 0;                    /* 보고 있는 해 */
+var statSelM = null;              /* 막대에서 고른 달 (0~11) */
+function wonShort(n){
+  if(n < 1000000) return won(n);
+  return (Math.round(n / 1000) / 10).toString().replace(/\.0$/, '') + '만원';
+}
+function barLabel(n){            /* 막대 위 작은 숫자: 4.5만 / 9천 */
+  if(n >= 10000) return (Math.round(n / 1000) / 10).toString().replace(/\.0$/, '') + '만';
+  if(n >= 1000) return Math.round(n / 1000) + '천';
+  return String(n);
+}
+/* 비용이 적힌, 오늘까지의 기록 */
+function paidRecords(){
+  var today = todayStr();
+  return state.records.filter(function(r){ return r.cost != null && r.cost > 0 && r.date <= today; });
+}
+function renderStat(){
+  var today = todayStr();
+  var nowY = +today.slice(0, 4), nowM = +today.slice(5, 7) - 1;
+  if(!statY) statY = nowY;
+  var paid = paidRecords();
+  var minY = nowY;
+  paid.forEach(function(r){ var y = +r.date.slice(0, 4); if(y < minY) minY = y; });
+  if(statY < minY) statY = minY;
+  if(statY > nowY) statY = nowY;
+  $('yrTitle').textContent = statY + '년';
+  $('yrPrev').disabled = statY <= minY;  $('yrPrev').style.opacity = statY <= minY ? .35 : 1;
+  $('yrNext').disabled = statY >= nowY;  $('yrNext').style.opacity = statY >= nowY ? .35 : 1;
+
+  var yr = paid.filter(function(r){ return +r.date.slice(0, 4) === statY; });
+  var months = [0,0,0,0,0,0,0,0,0,0,0,0];
+  var total = 0;
+  yr.forEach(function(r){ months[+r.date.slice(5, 7) - 1] += r.cost; total += r.cost; });
+  var isNow = statY === nowY;
+  var monthsSoFar = isNow ? (nowM + 1) : 12;
+
+  /* 위쪽 숫자 3개 */
+  var k3;
+  if(isNow){
+    var prevM = nowM > 0 ? months[nowM - 1] : paid.filter(function(r){ return r.date.slice(0, 7) === (nowY - 1) + '-12'; })
+      .reduce(function(a, r){ return a + r.cost; }, 0);
+    var diff = months[nowM] - prevM;
+    k3 = '<div class="kpi"><span>이번 달</span><b title="' + won(months[nowM]) + '">' + wonShort(months[nowM]) + '</b>'
+      + '<em>' + (diff === 0 ? '지난달과 같음' : ('지난달보다 ' + (diff > 0 ? '+' : '−') + wonShort(Math.abs(diff)))) + '</em></div>';
+  } else {
+    var bestM = 0;
+    months.forEach(function(v, i){ if(v > months[bestM]) bestM = i; });
+    k3 = '<div class="kpi"><span>가장 많이 쓴 달</span><b>' + (months[bestM] ? (bestM + 1) + '월' : '-') + '</b>'
+      + '<em>' + (months[bestM] ? wonShort(months[bestM]) : '기록 없음') + '</em></div>';
+  }
+  $('statKpis').innerHTML =
+      '<div class="kpi"><span>' + statY + '년 합계</span><b title="' + won(total) + '">' + wonShort(total) + '</b><em>' + yr.length + '번 관리</em></div>'
+    + '<div class="kpi"><span>월 평균</span><b>' + wonShort(Math.round(total / monthsSoFar)) + '</b><em>' + (isNow ? (nowM + 1) + '개월 기준' : '12개월 기준') + '</em></div>'
+    + k3;
+
+  /* 월별 막대 */
+  if(statSelM == null || statSelM > 11) statSelM = isNow ? nowM : months.indexOf(Math.max.apply(null, months));
+  var max = Math.max.apply(null, months) || 1;
+  var bars = '', labels = '';
+  months.forEach(function(v, i){
+    var h = v ? Math.max(4, Math.round(v / max * 100)) : 0;
+    var cls = 'mbar' + (isNow && i === nowM ? ' cur' : '') + (i === statSelM ? ' sel' : '');
+    bars += '<button class="' + cls + '" data-m="' + i + '" aria-label="' + (i + 1) + '월 ' + won(v) + '" title="' + (i + 1) + '월 ' + won(v) + '">'
+      + (i === statSelM && v ? '<span class="v">' + barLabel(v) + '</span>' : '')
+      + '<i style="height:' + h + '%"></i></button>';
+    labels += '<span' + (isNow && i === nowM ? ' class="cur"' : '') + '>' + (i + 1) + '</span>';
+  });
+  $('mBars').innerHTML = bars;
+  $('mLabels').innerHTML = labels;
+
+  /* 고른 달 내역 */
+  var mKey = statY + '-' + pad2(statSelM + 1);
+  var mRecs = yr.filter(function(r){ return r.date.slice(0, 7) === mKey; })
+    .sort(function(a, b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
+  var md = '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)">'
+    + '<div class="day-title" style="margin:0 0 4px">' + (statSelM + 1) + '월 · ' + won(months[statSelM]) + '</div>';
+  if(mRecs.length === 0) md += '<div class="set-note" style="margin-top:2px">이 달에는 비용을 적은 기록이 없어요.</div>';
+  mRecs.forEach(function(r){
+    var it = itemById(r.itemId);
+    md += '<div class="tl-item"><span class="tl-date">' + esc(fmtDate(r.date).slice(5)) + '</span>'
+      + '<span class="tl-body"><b style="color:var(--ink)">' + esc(it ? it.name : '') + '</b>'
+      + (r.shop ? '<span class="sep">·</span>' + esc(r.shop) : '') + '</span>'
+      + '<span style="font-size:12.5px;font-weight:800;white-space:nowrap">' + won(r.cost) + '</span></div>';
+  });
+  $('mDetail').innerHTML = md + '</div>';
+
+  /* 카테고리별 · 항목별 */
+  var byCat = {}, byItem = {};
+  yr.forEach(function(r){
+    var it = itemById(r.itemId);
+    var ck = it ? it.cat : '기타';
+    byCat[ck] = (byCat[ck] || 0) + r.cost;
+    var b = byItem[r.itemId] || (byItem[r.itemId] = {sum:0, n:0, it:it});
+    b.sum += r.cost; b.n++;
+  });
+  var emptyMsg = '<div class="empty-box" style="padding:18px">' + statY + '년에 비용을 적은 기록이 없어요.<br>기록할 때 비용을 넣으면 여기 모여요 💸</div>';
+  var cats = Object.keys(byCat).sort(function(a, b){ return byCat[b] - byCat[a]; });
+  $('catSub').textContent = cats.length ? statY + '년 · ' + cats.length + '개 분류' : '';
+  if(!cats.length){ $('catBreak').innerHTML = emptyMsg; }
+  else {
+    var ch = '';
+    var topC = byCat[cats[0]];
+    cats.forEach(function(ck){
+      var pct = Math.round(byCat[ck] / total * 100);
+      ch += '<div class="hbar-row"><div class="hbar-top"><span class="nm"><span class="cat-dot" style="margin-top:0;background:' + catColor(ck) + '"></span>' + esc(ck) + '</span>'
+        + '<span class="amt">' + won(byCat[ck]) + '</span><span class="pct">' + pct + '%</span></div>'
+        + '<div class="hbar"><i style="width:' + Math.max(2, Math.round(byCat[ck] / topC * 100)) + '%;background:' + catColor(ck) + '"></i></div></div>';
+    });
+    $('catBreak').innerHTML = ch;
+  }
+  var ids = Object.keys(byItem).sort(function(a, b){ return byItem[b].sum - byItem[a].sum; });
+  if(!ids.length){ $('itemBreak').innerHTML = emptyMsg; }
+  else {
+    var ih = '';
+    var topI = byItem[ids[0]].sum;
+    ids.forEach(function(id){
+      var b = byItem[id];
+      var nm = b.it ? b.it.name : '삭제된 항목';
+      var col = b.it ? catColor(b.it.cat) : catColor('기타');
+      ih += '<div class="hbar-row"><div class="hbar-top"><span class="nm"><span class="cat-dot" style="margin-top:0;background:' + col + '"></span>' + esc(nm) + '</span>'
+        + '<span class="amt">' + won(b.sum) + '</span></div>'
+        + '<div class="hbar-sub">' + b.n + '번 · 1회 평균 ' + won(Math.round(b.sum / b.n)) + '</div>'
+        + '<div class="hbar"><i style="width:' + Math.max(2, Math.round(b.sum / topI * 100)) + '%;background:' + col + '"></i></div></div>';
+    });
+    $('itemBreak').innerHTML = ih;
+  }
+}
+
+/* ─────────── 📅 구글 캘린더 ─────────── */
+function ymdCompact(s){ return s.replace(/-/g, ''); }
+/* 항목의 다음 날짜: 예정 기록이 있으면 그 날, 없으면 권장일 */
+function gcalTarget(it){
+  var st = statusOf(it);
+  if(st.planned) return {date:st.planned.date, kind:'예약', st:st};
+  if(st.due) return {date:st.due, kind:'권장일', st:st};
+  return null;
+}
+function gcalUrl(it){
+  var t = gcalTarget(it);
+  if(!t) return null;
+  var end = addCycle(t.date, 1, 'd');               /* 하루 종일 일정: 끝 날짜는 다음 날 */
+  var details = '꽃단장 🌸 ' + it.name + ' (' + cycleText(it) + ')';
+  if(t.st.last) details += '\n마지막 관리: ' + fmtDate(t.st.last.date);
+  var shop = (t.kind === '예약' && t.st.planned.shop) ? t.st.planned.shop : it.shop;
+  if(shop) details += '\n샵: ' + shop;
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent('🌸 ' + it.name + ' ' + t.kind)
+    + '&dates=' + ymdCompact(t.date) + '/' + ymdCompact(end)
+    + '&details=' + encodeURIComponent(details)
+    + (shop ? '&location=' + encodeURIComponent(shop) : '');
+}
+function openGcal(itemId){
+  var it = itemById(itemId);
+  var url = it ? gcalUrl(it) : null;
+  if(!url){ toast('먼저 관리 기록을 남기면 다음 권장일을 넣을 수 있어요'); return; }
+  /* 새 창(탭)으로 열어 꽃단장 화면은 그대로 둠 */
+  var a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ try{ document.body.removeChild(a); }catch(e){} }, 0);
+}
+
+/* ─────────── 스낵바 (버튼 달린 알림) ─────────── */
+var snackTimer = null, snackFn = null;
+function showSnack(msg, btnLabel, fn){
+  var el = $('snack');
+  $('snackText').textContent = msg;
+  $('snackBtn').textContent = btnLabel;
+  snackFn = fn;
+  $('toast').classList.remove('on');
+  el.classList.add('on');
+  if(snackTimer) clearTimeout(snackTimer);
+  snackTimer = setTimeout(hideSnack, 8000);
+}
+function hideSnack(){
+  $('snack').classList.remove('on');
+  snackFn = null;
+  if(snackTimer){ clearTimeout(snackTimer); snackTimer = null; }
 }
 
 /* ─────────── 설정 렌더 ─────────── */
 function renderSet(){
-  $('setCounts').textContent = '관리 항목 ' + state.items.length + '개 · 기록 ' + state.records.length + '건';
+  var nHid = hiddenItems().length;
+  $('setCounts').textContent = '관리 항목 ' + state.items.length + '개' + (nHid ? ' (보관함 ' + nHid + ')' : '') + ' · 기록 ' + state.records.length + '건';
+  renderCatList();
   var info = '';
   try{
     var raw = localStorage.getItem(LS_KEY);
@@ -1120,9 +1501,10 @@ function renderSet(){
 }
 
 /* ─────────── 기록 시트 ─────────── */
-function fillItemSelect(sel){
+function fillItemSelect(sel, includeId){
   var html = '';
   state.items.forEach(function(it){
+    if(it.hidden && it.id !== includeId) return;     /* 보관함 항목은 고칠 때만 보여 줌 */
     html += '<option value="' + esc(it.id) + '">' + esc(it.name) + ' (' + esc(it.cat) + ')</option>';
   });
   sel.innerHTML = html;
@@ -1153,8 +1535,10 @@ function updateDupNote(){
   }
 }
 function openRecordSheet(dateStr, recordId, fromDetailItemId){
-  if(state.items.length === 0){ toast('먼저 관리 항목을 추가해 주세요 🌸'); return; }
-  fillItemSelect($('recItem'));
+  var recForSel = null;
+  if(recordId) state.records.forEach(function(r){ if(r.id === recordId) recForSel = r; });
+  if(activeItems().length === 0 && !recForSel){ toast('먼저 관리 항목을 추가해 주세요 🌸'); return; }
+  fillItemSelect($('recItem'), recForSel ? recForSel.itemId : null);
   editingRecordId = recordId || null;
   returnToItem = fromDetailItemId || null;
   dupArmed = false;
@@ -1189,7 +1573,6 @@ function openRecordSheet(dateStr, recordId, fromDetailItemId){
     state.records.forEach(function(r){ if(r.id === recordId) rec = r; });
     if(rec){
       $('recItem').value = rec.itemId;
-      if(!$('recItem').value){ fillItemSelect($('recItem')); }
       $('recDate').value = rec.date;
       $('recShop').value = rec.shop;
       $('recCost').value = rec.cost == null ? '' : rec.cost;
@@ -1197,7 +1580,7 @@ function openRecordSheet(dateStr, recordId, fromDetailItemId){
       $('recMemo').value = rec.memo;
     }
   } else {
-    $('recItem').value = state.items[0].id;
+    $('recItem').value = activeItems()[0].id;
     $('recDate').value = dateStr || todayStr();
     $('recShop').value = '';
     $('recCost').value = '';
@@ -1251,7 +1634,65 @@ function saveRecord(){
   returnToItem = null;
   closeSheets();
   renderAll();
+  /* 저장 직후: 다음 날짜(예약일·권장일)를 구글 캘린더에 넣을지 바로 물어봄 */
+  var savedItem = itemById(itemId);
+  var gT = savedItem ? gcalTarget(savedItem) : null;
+  if(gT && (date > todayStr() ? gT.kind === '예약' && gT.date === date : (gT.st.last && gT.st.last.date === date))){
+    showSnack((editingRecordId ? '고쳤어요 ✓' : '기록했어요 🌸') + ' 다음 ' + gT.kind + ' ' + fmtDate(gT.date).slice(5),
+      '📅 캘린더에 넣기', function(){ openGcal(itemId); });
+  }
   if(back && itemById(back)) setTimeout(function(){ openDetail(back); }, 40);
+}
+
+/* ─────────── 🏷 사용자 카테고리 ─────────── */
+var newCatColor = null;          /* 항목 시트의 '새 카테고리' 색 */
+var setCatColor = null;          /* 설정 화면의 '새 카테고리' 색 */
+function paintSwatches(hostId, cur){
+  var host = $(hostId);
+  if(!host) return;
+  var html = '';
+  CUSTOM_COLORS.forEach(function(c){
+    html += '<button type="button" class="swatch' + (c === cur ? ' on' : '') + '" data-color="' + c + '" style="background:' + c + '" aria-label="색 ' + c + '"></button>';
+  });
+  host.innerHTML = html;
+}
+/* 이름 확인 후 카테고리 추가 → 성공하면 이름, 실패하면 null (저장은 호출한 쪽에서) */
+function addCustomCat(rawName, color){
+  var nm = String(rawName||'').trim().slice(0, 12);
+  if(!nm){ toast('새 카테고리 이름을 입력해 주세요'); return null; }
+  if(nm === '__new__' || catExists(nm)){ toast('이미 있는 카테고리 이름이에요'); return null; }
+  if(!state.cats) state.cats = [];
+  state.cats.push({id:'c' + uid(), name:nm, color:color || nextCustomColor()});
+  return nm;
+}
+function renderCatList(){
+  var host = $('catList');
+  if(!host) return;
+  var html = '';
+  allCats().forEach(function(c){
+    var n = state.items.filter(function(it){ return it.cat === c.key; }).length;
+    html += '<div class="cat-row"><span class="cat-dot" style="margin-top:0;background:' + c.color + '"></span>'
+      + '<span class="nm">' + esc(c.key) + ' <span class="sub">· 항목 ' + n + '개' + (c.id ? '' : ' · 기본') + '</span></span>'
+      + (c.id ? '<button class="mini-btn danger" data-catdel="' + esc(c.id) + '">삭제</button>' : '')
+      + '</div>';
+  });
+  host.innerHTML = html;
+  if(!setCatColor) setCatColor = nextCustomColor();
+  paintSwatches('setCatSw', setCatColor);
+}
+function deleteCustomCat(cid){
+  var cat = null;
+  (state.cats||[]).forEach(function(c){ if(c.id === cid) cat = c; });
+  if(!cat) return;
+  var n = state.items.filter(function(it){ return it.cat === cat.name; }).length;
+  askConfirm('카테고리 삭제', '"' + cat.name + '" 카테고리를 지울까요?' + (n ? '\n이 카테고리의 항목 ' + n + '개는 \'기타\'로 옮겨져요. 기록은 그대로예요.' : ''), '삭제', function(){
+    state.items.forEach(function(it){ if(it.cat === cat.name) it.cat = '기타'; });
+    state.cats = state.cats.filter(function(c){ return c.id !== cid; });
+    if(filter === cat.name) filter = '전체';
+    save();
+    renderAll();
+    toast('카테고리를 지웠어요');
+  });
 }
 
 /* ─────────── 항목 시트 ─────────── */
@@ -1259,12 +1700,21 @@ function openItemSheet(itemId){
   editingItemId = itemId || null;
   var catSel = $('itCat');
   var html = '';
-  CATS.forEach(function(c){
+  allCats().forEach(function(c){
     html += '<option value="' + esc(c.key) + '">' + esc(c.key) + '</option>';
   });
+  html += '<option value="__new__">＋ 새 카테고리 만들기…</option>';
   catSel.innerHTML = html;
+  $('itNewCat').classList.add('hidden');
+  $('itNewCatName').value = '';
+  newCatColor = nextCustomColor();
+  paintSwatches('itNewCatSw', newCatColor);
   $('itemTitle').textContent = itemId ? '항목 수정' : '관리 항목 추가';
   $('itDelete').classList.toggle('hidden', !itemId);
+  var hideBtn = $('itHide');
+  hideBtn.classList.toggle('hidden', !itemId);
+  var itCur = itemId ? itemById(itemId) : null;
+  hideBtn.textContent = (itCur && itCur.hidden) ? '🌸 보관함에서 꺼내기' : '🗂 보관함으로 숨기기 (기록은 그대로)';
   if(itemId){
     var it = itemById(itemId);
     if(it){
@@ -1290,6 +1740,13 @@ function saveItem(){
   if(!name){ toast('이름을 입력해 주세요'); return; }
   var cv = Math.round(+$('itCycleV').value);
   if(!cv || cv <= 0){ toast('권장 주기를 숫자로 입력해 주세요'); return; }
+  var catPick = $('itCat').value;
+  if(catPick === '__new__'){
+    if(state.items.some(function(it){ return it.name === name && it.id !== editingItemId; })){ toast('같은 이름의 항목이 이미 있어요'); return; }
+    var nc = addCustomCat($('itNewCatName').value, newCatColor);
+    if(!nc) return;                 /* 이름 문제는 addCustomCat이 알려 줌 */
+    catPick = nc;
+  }
   var dup = null;
   state.items.forEach(function(it){ if(it.name === name && it.id !== editingItemId) dup = it; });
   if(dup){ toast('같은 이름의 항목이 이미 있어요'); return; }
@@ -1297,7 +1754,7 @@ function saveItem(){
     state.items.forEach(function(it){
       if(it.id === editingItemId){
         it.name = name;
-        it.cat = CAT_COLOR[$('itCat').value] ? $('itCat').value : '기타';
+        it.cat = catExists(catPick) ? catPick : '기타';
         it.cycleV = cv;
         it.cycleU = $('itCycleU').value;
         it.shop = $('itShop').value.trim();
@@ -1308,7 +1765,7 @@ function saveItem(){
   } else {
     state.items.push({
       id: uid(), name: name,
-      cat: CAT_COLOR[$('itCat').value] ? $('itCat').value : '기타',
+      cat: catExists(catPick) ? catPick : '기타',
       cycleV: cv, cycleU: $('itCycleU').value,
       shop: $('itShop').value.trim(),
       memo: $('itMemo').value.trim(),
@@ -1333,6 +1790,9 @@ function openDetail(itemId){
   if(st.last) meta += ' · 마지막 ' + fmtDate(st.last.date) + ' (' + STATUS_META[st.key].text + ')';
   if(st.planned) meta += ' · 예정 ' + fmtDate(st.planned.date) + ' (D-' + st.planIn + ')';
   $('dtMeta').textContent = meta;
+  var gT = gcalTarget(it);
+  $('dtGcal').classList.toggle('hidden', !gT);
+  if(gT) $('dtGcal').textContent = '📅 ' + gT.kind + ' ' + fmtDate(gT.date) + ' 구글 캘린더에 넣기';
   var today = todayStr();
   var html = '';
   if(recs.length === 0){
@@ -1456,15 +1916,17 @@ function importFile(file){
 }
 
 /* ─────────── 탭 ─────────── */
+var VIEW_IDS = {home:'viewHome', cal:'viewCal', stat:'viewStat', set:'viewSet'};
 function switchTab(name){
-  ['home','cal','set'].forEach(function(t){
-    document.getElementById('view' + (t==='home'?'Home':t==='cal'?'Cal':'Set')).classList.toggle('hidden', t !== name);
+  Object.keys(VIEW_IDS).forEach(function(t){
+    $(VIEW_IDS[t]).classList.toggle('hidden', t !== name);
   });
   var tabs = document.querySelectorAll('.tab');
   for(var i = 0; i < tabs.length; i++){
     tabs[i].classList.toggle('on', tabs[i].dataset.tab === name);
   }
-  if(name === 'cal') renderCal();
+  if(name === 'cal'){ tlLimit = TL_STEP; renderCal(); }
+  if(name === 'stat') renderStat();
   if(name === 'set') renderSet();
   window.scrollTo(0, 0);
 }
@@ -1473,6 +1935,7 @@ function switchTab(name){
 function renderAll(){
   renderHome();
   if(!$('viewCal').classList.contains('hidden')) renderCal();
+  if(!$('viewStat').classList.contains('hidden')) renderStat();
   if(!$('viewSet').classList.contains('hidden')) renderSet();
 }
 
@@ -1587,7 +2050,8 @@ function syncData(s){
   s = (s && typeof s === 'object') ? s : {};
   return {
     items: (Array.isArray(s.items) ? s.items.slice() : []).sort(byIdAsc),
-    records: (Array.isArray(s.records) ? s.records.slice() : []).sort(byIdAsc)
+    records: (Array.isArray(s.records) ? s.records.slice() : []).sort(byIdAsc),
+    cats: (Array.isArray(s.cats) ? s.cats.slice() : []).sort(byIdAsc)
   };
 }
 function syncSig(s){ try{ return JSON.stringify(syncData(s)); }catch(e){ return ''; } }
@@ -1622,17 +2086,18 @@ function mergeListBy(baseArr, localArr, cloudArr){
 }
 /* base(없을 수 있음) · 이 폰 · 클라우드를 합쳐 하나의 기록으로 */
 function mergeStates(base, local, cloud){
-  var b = syncData(base ? normalize(base) : {items:[], records:[]});
+  var b = syncData(base ? normalize(base) : {items:[], records:[], cats:[]});
   var l = syncData(local), c = syncData(cloud);
   var it = mergeListBy(b.items, l.items, c.items);
   var rc = mergeListBy(b.records, l.records, c.records);
-  var out = {version:1, items:it.list, records:rc.list};
+  var ct = mergeListBy(b.cats, l.cats, c.cats);
+  var out = {version:1, items:it.list, records:rc.list, cats:ct.list};
   var alive = {};
   out.items.forEach(function(x){ alive[x.id] = 1; });
   out.records = out.records.filter(function(r){ return !!alive[r.itemId]; });
   /* 병합 결과도 저장·불러오기와 같은 규칙(이름 중복 합치기 등)으로 정리 */
-  out = normalize({version:1, items:out.items, records:out.records});
-  out.conflicts = it.conflicts + rc.conflicts;
+  out = normalize({version:1, items:out.items, records:out.records, cats:out.cats});
+  out.conflicts = it.conflicts + rc.conflicts + ct.conflicts;
   return out;
 }
 
@@ -2126,8 +2591,71 @@ function bind(){
     if(det){ openDetail(det.dataset.detail); return; }
     var led = e.target.closest('[data-edit]');
     if(led){ openItemSheet(led.dataset.edit); return; }
+    var gc = e.target.closest('[data-gcal]');
+    if(gc){ openGcal(gc.dataset.gcal); return; }
   });
   $('btnAddItem').addEventListener('click', function(){ openItemSheet(null); });
+
+  /* 🗂 보관함 */
+  $('archive').addEventListener('click', function(e){
+    if(e.target.closest('#archToggle')){ archOpen = !archOpen; renderArchive(); return; }
+    var un = e.target.closest('[data-unhide]');
+    if(un) setHidden(un.dataset.unhide, false);
+  });
+  $('itHide').addEventListener('click', function(){
+    if(!editingItemId) return;
+    var it = itemById(editingItemId);
+    if(!it) return;
+    var iid = editingItemId;
+    closeSheets();
+    setHidden(iid, !it.hidden);
+  });
+
+  /* 🏷 카테고리 (항목 시트 · 설정) */
+  $('itCat').addEventListener('change', function(){
+    var isNew = this.value === '__new__';
+    $('itNewCat').classList.toggle('hidden', !isNew);
+    if(isNew) setTimeout(function(){ $('itNewCatName').focus(); }, 50);
+  });
+  $('itNewCatSw').addEventListener('click', function(e){
+    var b = e.target.closest('[data-color]');
+    if(!b) return;
+    newCatColor = b.dataset.color; paintSwatches('itNewCatSw', newCatColor);
+  });
+  $('setCatSw').addEventListener('click', function(e){
+    var b = e.target.closest('[data-color]');
+    if(!b) return;
+    setCatColor = b.dataset.color; paintSwatches('setCatSw', setCatColor);
+  });
+  $('setCatAdd').addEventListener('click', function(){
+    var nm = addCustomCat($('setCatName').value, setCatColor);
+    if(!nm) return;
+    save();
+    $('setCatName').value = '';
+    setCatColor = nextCustomColor();
+    renderAll();
+    toast('"' + nm + '" 카테고리를 만들었어요 🏷');
+  });
+  $('catList').addEventListener('click', function(e){
+    var d = e.target.closest('[data-catdel]');
+    if(d) deleteCustomCat(d.dataset.catdel);
+  });
+
+  /* 💸 꾸밈비 */
+  $('yrPrev').addEventListener('click', function(){ statY--; statSelM = null; renderStat(); });
+  $('yrNext').addEventListener('click', function(){ statY++; statSelM = null; renderStat(); });
+  $('mBars').addEventListener('click', function(e){
+    var b = e.target.closest('[data-m]');
+    if(!b) return;
+    statSelM = +b.dataset.m;
+    renderStat();
+  });
+
+  /* 이력 더 보기 · 📅 구글 캘린더 · 스낵바 */
+  $('tlMore').addEventListener('click', function(){ tlLimit += TL_STEP; renderTimeline(); });
+  $('dtGcal').addEventListener('click', function(){ if(detailItemId) openGcal(detailItemId); });
+  $('snackBtn').addEventListener('click', function(){ var fn = snackFn; hideSnack(); if(fn) fn(); });
+  $('snackX').addEventListener('click', hideSnack);
 
   /* 달력 */
   $('calPrev').addEventListener('click', function(){ moveMonth(-1); });
@@ -2302,7 +2830,7 @@ function bind(){
     resetArmed = false;
     $('btnReset').textContent = '🗑 전체 초기화';
     saveUndo();
-    state = {version:1, items:[], records:[]};
+    state = {version:1, items:[], records:[], cats:[]};
     save();
     renderAll();
     toast(sync.status === 'on'
@@ -2458,6 +2986,15 @@ function init(){
   switchTab('home');
   initCloud();
   syncStuck();
+  registerSW();
+}
+/* 인터넷 없이도 열리도록 (https 주소에서만) */
+function registerSW(){
+  try{
+    if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    }
+  }catch(e){}
 }
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', init);
