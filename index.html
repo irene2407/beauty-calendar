@@ -46,6 +46,15 @@ button{font-family:inherit}
 .warnbar{display:none;margin:0 0 12px;padding:11px 13px;border-radius:14px;background:#FBF3E4;border:1px solid #EDDBBC;
   color:#8A6432;font-size:11.5px;font-weight:700;line-height:1.5}
 .warnbar.on{display:block}
+/* 🛡 기록 보호 안내 */
+.guard{margin:0 0 12px;padding:12px 13px;border-radius:16px;background:#EEF1F7;border:1px solid #DCE2EE;color:#44506A;
+  font-size:12.5px;font-weight:700;line-height:1.55}
+.guard b{display:block;font-size:13px;font-weight:800;margin-bottom:2px}
+.guard .how{margin-top:7px;padding:8px 10px;border-radius:11px;background:#fff;font-size:12px}
+.guard .row{display:flex;gap:6px;margin-top:9px}
+.guard button{flex:1;padding:9px 6px;border-radius:11px;border:1px solid #DCE2EE;background:#fff;color:#44506A;
+  font-size:12px;font-weight:800;cursor:pointer;-webkit-appearance:none;font-family:inherit}
+.guard button.main{background:#5B6B8C;border-color:transparent;color:#fff}
 
 .app{max-width:820px;margin:0 auto;padding:0 16px;padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 
@@ -130,6 +139,7 @@ button{font-family:inherit}
 .badge.soon{background:var(--gold-cream);color:var(--gold-d);border-color:#EBDCC2}
 .badge.over{background:var(--over-bg);color:var(--over-ink);border-color:#EFCFC9}
 .badge.none{background:#F6F1EA;color:var(--muted);border-color:#EDE4D8}
+.badge.book{background:#EEF1F7;color:#5B6B8C;border-color:#DCE2EE}
 .item-meta{margin:7px 0 0 19px;font-size:12px;color:var(--ink-2);font-weight:600;line-height:1.55}
 .sep{color:#EADCCC;margin:0 5px}
 .dplus{margin:8px 0 0 19px;font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
@@ -283,6 +293,16 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
   border:1px solid #E6D6BE;background:var(--gold-cream);color:var(--gold-d);font-size:11px;font-weight:800;
   cursor:pointer;-webkit-appearance:none;font-family:inherit}
 .gcal-btn:active{background:var(--blush)}
+.pill-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0 19px}
+.pill-row .gcal-btn{margin:0}
+.gcal-btn.plan{background:#EEF1F7;border-color:#DCE2EE;color:#5B6B8C}
+/* 지난 예약 확인 상자 */
+.check-box{margin:10px 0 0 19px;padding:11px 12px;border-radius:14px;background:var(--gold-cream);border:1px solid #EBDCC2}
+.check-box p{margin:0 0 9px;font-size:12.5px;font-weight:800;color:var(--gold-d);line-height:1.45}
+.check-box .row{display:flex;gap:6px}
+.check-box button{flex:1;padding:9px 4px;border-radius:11px;border:1px solid #E6D6BE;background:#fff;color:var(--ink-2);
+  font-size:12px;font-weight:800;cursor:pointer;-webkit-appearance:none;font-family:inherit;white-space:nowrap}
+.check-box button.yes{background:linear-gradient(135deg,var(--rose),var(--rose-d));border-color:transparent;color:#fff}
 
 /* ── 스낵바 (저장 직후 버튼 달린 알림) ── */
 .snack{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));z-index:61;
@@ -367,6 +387,7 @@ input, select, textarea, .f-in, select.f-in, textarea.paste{font-size:16px}
 
   <!-- ═══════════ 홈 / 현황 ═══════════ -->
   <section id="viewHome">
+    <div class="guard hidden" id="guardBar"></div>
     <div class="hero">
       <div class="hero-top" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div style="font-size:13px;font-weight:800;color:var(--label)" id="heroDate">오늘</div>
@@ -424,7 +445,7 @@ input, select, textarea, .f-in, select.f-in, textarea.paste{font-size:16px}
       <div class="set-note" id="calLegend" style="margin-top:10px"></div>
     </div>
     <div class="day-list" id="dayList"></div>
-    <div class="sec-head"><span class="sec-title">항목별 이력</span><span class="sec-sub" id="tlCount"></span></div>
+    <div class="sec-head"><span class="sec-title">전체 이력</span><span class="sec-sub" id="tlCount"></span></div>
     <div class="card" id="timeline"></div>
     <button class="more-btn hidden" id="tlMore">더 보기</button>
   </section>
@@ -492,14 +513,15 @@ input, select, textarea, .f-in, select.f-in, textarea.paste{font-size:16px}
   <h2 id="recTitle">관리 기록</h2>
   <label class="f-lbl">관리 항목</label>
   <select class="f-in" id="recItem"></select>
-  <label class="f-lbl">관리한 날</label>
+  <label class="f-lbl" id="recDateLbl">관리한 날</label>
   <input class="f-in" type="date" id="recDate">
+  <div class="hint hidden" id="recPlanHint"></div>
   <label class="f-lbl">샵 (선택)</label>
   <input class="f-in" type="text" id="recShop" placeholder="예: 앤드류다 헤어">
   <label class="f-lbl">비용 (선택)</label>
   <input class="f-in" type="number" id="recCost" min="0" step="100" inputmode="numeric" placeholder="예: 45000">
-  <label class="f-lbl">만족도 (선택)</label>
-  <div class="rate-row" id="recRate"></div>
+  <div id="recRateWrap"><label class="f-lbl">만족도 (선택)</label>
+  <div class="rate-row" id="recRate"></div></div>
   <label class="f-lbl">메모 (선택)</label>
   <textarea class="paste" id="recMemo" style="min-height:64px" placeholder="예: 컬 잘 나옴, 다음엔 4주 뒤에"></textarea>
   <div class="dup-note hidden" id="recDupNote"></div>
@@ -800,6 +822,8 @@ function normalize(raw){
         memo: String(r.memo==null?'':r.memo),
         createdAt: isDateStr(r.createdAt) ? r.createdAt : r.date
       });
+      /* 예약 표시: 저장된 표시가 있거나, 예전 버전에서 미래 날짜로 남긴 기록 */
+      if(r.plan === true || r.date > todayStr()) out.records[out.records.length-1].plan = true;
     });
   }
   if(out.items.length === 0 && !(raw && Array.isArray(raw.items) && raw.items.length === 0)){
@@ -857,11 +881,15 @@ function lastRecordOf(itemId){
   state.records.forEach(function(r){ if(r.itemId === itemId && (!last || r.date > last.date)) last = r; });
   return last;
 }
-/* 마지막 '완료' 기록 = 오늘까지의 기록. 미래 날짜 기록은 예정으로 따로 다룸 */
+/* 예약(plan) 기록: 미래 날짜이거나, 날짜가 지났는데 아직 '받았어요' 확인을 안 한 기록 */
+function isPlan(r, today){ return r.plan === true || r.date > (today || todayStr()); }
+/* 날짜가 지났는데 확인 안 한 예약 */
+function isPastPlan(r, today){ return r.plan === true && r.date <= (today || todayStr()); }
+/* 마지막 '완료' 기록 = 오늘까지의 기록 중 예약 확인 대기가 아닌 것 */
 function lastDoneOf(itemId, today){
   var last = null;
   state.records.forEach(function(r){
-    if(r.itemId !== itemId || r.date > today) return;
+    if(r.itemId !== itemId || isPlan(r, today)) return;
     if(!last || r.date > last.date) last = r;
   });
   return last;
@@ -875,18 +903,32 @@ function nextPlannedOf(itemId, today){
   });
   return plan;
 }
+/* 날짜가 지난 예약 중 가장 이른 것 (받았는지 확인 필요) */
+function pastPlanOf(itemId, today){
+  var p = null;
+  state.records.forEach(function(r){
+    if(r.itemId !== itemId || !isPastPlan(r, today)) return;
+    if(!p || r.date < p.date) p = r;
+  });
+  return p;
+}
 function statusOf(it){
   var today = todayStr();
   var planned = nextPlannedOf(it.id, today);
   var planIn = planned ? diffDays(today, planned.date) : null;
+  var check = pastPlanOf(it.id, today);
   var last = lastDoneOf(it.id, today);
-  if(!last){
-    return {key: planned ? 'plan' : 'none', last:null, planned:planned, planIn:planIn, elapsed:null, total:null, due:null};
+  var out = {last:last, planned:planned, planIn:planIn, check:check, elapsed:null, total:null, due:null};
+  if(last){
+    out.elapsed = diffDays(last.date, today);
+    out.due = addCycle(last.date, it.cycleV, it.cycleU);
+    out.total = diffDays(last.date, out.due);
   }
-  var elapsed = diffDays(last.date, today);
-  var due = addCycle(last.date, it.cycleV, it.cycleU);
-  var total = diffDays(last.date, due);
-  var out = {last:last, planned:planned, planIn:planIn, elapsed:elapsed, total:total, due:due};
+  /* 우선순위: 지난 예약 확인 → 예약 있음 → (기록 기준) 지남·슬슬·여유 */
+  if(check){ out.key = 'check'; return out; }
+  if(planned){ out.key = 'booked'; return out; }
+  if(!last){ out.key = 'none'; return out; }
+  var elapsed = out.elapsed, total = out.total;
   if(elapsed > total){ out.key = 'over'; return out; }
   if(total > 0 && elapsed >= Math.ceil(total*0.8)){ out.key = 'soon'; return out; }
   out.key = 'ok';
@@ -896,7 +938,8 @@ var STATUS_META = {
   ok:   {cls:'ok',   text:'여유'},
   soon: {cls:'soon', text:'슬슬 갈 때!'},
   over: {cls:'over', text:'관리 시기 지남'},
-  plan: {cls:'none', text:'예정 있음'},
+  check:  {cls:'soon', text:'예약 확인'},
+  booked: {cls:'book', text:'📅 예약 있음'},
   none: {cls:'none', text:'아직 기록 없음'}
 };
 function dplus(st){
@@ -998,7 +1041,7 @@ function renderChips(){
   var list = ['전체'].concat(allCats().map(function(c){ return c.key; }), ['갈 때 된 것만']);
   /* 지워진 카테고리를 보고 있었다면 '전체'로 */
   if(list.indexOf(filter) < 0 && !STAT_FILTERS_REV[filter]) filter = '전체';
-  var need = activeItems().filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over'; }).length;
+  var need = activeItems().filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over' || k === 'check'; }).length;
   var html = '';
   list.forEach(function(c){
     var label = (c === '갈 때 된 것만' && need) ? (c + ' ' + need) : c;
@@ -1016,12 +1059,12 @@ function visibleItems(){
   } else if(filter === '갈 때 된 것만'){
     arr = arr.filter(function(it){
       var st = statusOf(it);
-      return st.key === 'soon' || st.key === 'over';
+      return st.key === 'soon' || st.key === 'over' || st.key === 'check';
     });
   } else if(filter !== '전체'){
     arr = arr.filter(function(it){ return it.cat === filter; });
   }
-  var rank = {over:0, soon:1, ok:2, plan:3, none:4};
+  var rank = {check:0, over:1, soon:2, ok:3, booked:4, none:5};
   arr.sort(function(a,b){
     var sa = statusOf(a), sb = statusOf(b);
     if(rank[sa.key] !== rank[sb.key]) return rank[sa.key] - rank[sb.key];
@@ -1075,8 +1118,17 @@ function renderItems(){
       + '<div class="item-meta">' + metaLine + '</div>'
       + '<div class="dplus">' + dplus(st) + '</div>'
       + (dueSub ? '<div class="dplus-sub">' + esc(dueSub) + '</div>' : '')
-      + (st.last && st.planned ? '<div class="item-plan">📅 예정 ' + esc(fmtDate(st.planned.date)) + ' · D-' + st.planIn + '</div>' : '')
-      + (gcalTarget(it) ? '<button type="button" class="gcal-btn" data-gcal="' + esc(it.id) + '">📅 ' + (st.planned ? '예약일' : '권장일') + ' 구글 캘린더에 넣기</button>' : '')
+      + (st.last && st.planned ? '<div class="item-plan">📅 예약 ' + esc(fmtDate(st.planned.date)) + ' · D-' + st.planIn + (st.planned.shop ? ' · ' + esc(st.planned.shop) : '') + '</div>' : '')
+      + (st.check ? '<div class="check-box"><p>📅 ' + esc(fmtDate(st.check.date).slice(5)) + ' 예약, 받으셨나요?</p><div class="row">'
+          + '<button class="yes" data-pdone="' + esc(st.check.id) + '">받았어요 ✓</button>'
+          + '<button data-pedit="' + esc(st.check.id) + '">날짜 바꾸기</button>'
+          + '<button data-pcancel="' + esc(st.check.id) + '">취소됐어요</button></div></div>' : '')
+      + '<div class="pill-row">'
+      +   (st.planned
+            ? '<button type="button" class="gcal-btn plan" data-pedit="' + esc(st.planned.id) + '">✏️ 예약 변경</button>'
+            : (st.check ? '' : '<button type="button" class="gcal-btn plan" data-book="' + esc(it.id) + '">📅 예약 잡기</button>'))
+      +   (gcalTarget(it) ? '<button type="button" class="gcal-btn" data-gcal="' + esc(it.id) + '">🗓 ' + (st.planned ? '예약일' : '권장일') + ' 구글 캘린더에</button>' : '')
+      + '</div>'
       + shopLine
       + '<div class="item-actions">'
       +   '<button class="btn-done" data-done="' + esc(it.id) + '">오늘 관리했어요 ✓</button>'
@@ -1122,12 +1174,13 @@ function renderHome(){
   var t = todayStr();
   var d = parseD(t);
   $('heroDate').textContent = (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' + ['일','월','화','수','목','금','토'][d.getDay()] + ' · 오늘의 꽃단장';
-  var soon=0, over=0, plan=0, recorded=0;
+  var soon=0, over=0, plan=0, recorded=0, check=0;
   activeItems().forEach(function(it){
     var st = statusOf(it);
     var k = st.key;
     if(k==='soon') soon++;
     if(k==='over') over++;
+    if(k==='check') check++;
     if(st.planned) plan++;
     if(recordCountOf(it.id) > 0) recorded++;
   });
@@ -1138,9 +1191,10 @@ function renderHome(){
   $('statSoon').textContent = soon;
   $('statOver').textContent = over;
   var dd = $('heroDday');
-  if(dd) dd.textContent = plan ? ('📅 예정 ' + plan + '건') : '';
+  if(dd) dd.textContent = plan ? ('📅 예약 ' + plan + '건') : '';
   var note;
   if(nAct === 0) note = '관리 항목을 추가하면 마지막 관리일과 경과일을 자동으로 정리해 드려요.';
+  else if(check > 0) note = '날짜가 지난 예약이 ' + check + '개 있어요. 받으셨는지 카드에서 눌러 주세요 📅';
   else if(over > 0) note = '관리 시기가 지난 항목 ' + over + '개가 있어요. 오늘 살짝 챙겨볼까요?';
   else if(soon > 0) note = '슬슬 갈 때가 된 항목 ' + soon + '개가 있어요. 예약 잡기 좋은 날이에요.';
   else note = '관리할 때가 된 항목은 없어요. 여유를 누려요 🌷';
@@ -1149,6 +1203,7 @@ function renderHome(){
   renderChips();
   renderItems();
   renderStatBoxes();
+  renderGuard();
 }
 
 /* ─────────── 달력 렌더 ─────────── */
@@ -1181,19 +1236,21 @@ function renderCal(){
   cells.forEach(function(c){
     var ds = c.y + '-' + pad2(c.m+1) + '-' + pad2(c.d);
     var recs = state.records.filter(function(r){ return r.date === ds; });
-    var cats = [];
+    /* 분류별 점: 그날 그 분류에 받은 관리가 하나라도 있으면 꽉 찬 점, 예약만 있으면 속이 빈 점 */
+    var cats = [], doneCat = {};
     recs.forEach(function(r){
       var it = itemById(r.itemId);
-      if(it && cats.indexOf(it.cat) < 0) cats.push(it.cat);
+      if(!it) return;
+      if(cats.indexOf(it.cat) < 0) cats.push(it.cat);
+      if(!isPlan(r, today)) doneCat[it.cat] = 1;
     });
-    var future = ds > today;
     var dots = '';
     cats.slice(0,4).forEach(function(ck){
-      dots += future
+      dots += !doneCat[ck]
         ? '<i style="background:transparent;box-shadow:inset 0 0 0 1.5px ' + catColor(ck) + '"></i>'
         : '<i style="background:' + catColor(ck) + '"></i>';
     });
-    if(cats.length > 4) dots += '<i style="background:' + (future ? 'transparent' : catColor('기타')) + (future ? ';box-shadow:inset 0 0 0 1.5px ' + catColor('기타') : '') + '"></i>';
+    if(cats.length > 4) dots += '<i style="background:' + catColor('기타') + '"></i>';
     var cls = 'cal-cell' + (c.out ? ' out' : '') + (ds === today ? ' today' : '') + (ds === selDate ? ' sel' : '');
     html += '<button class="' + cls + '" data-date="' + ds + '"><span class="d">' + c.d + '</span><span class="cal-dots">' + dots + '</span></button>';
   });
@@ -1206,7 +1263,7 @@ function renderCal(){
     return used ? '<span style="margin-right:10px"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + c.color + ';margin-right:4px"></i>' + esc(c.key) + '</span>' : '';
   }).join('');
   $('calLegend').innerHTML = (leg || '기록을 남기면 여기에 색 범례가 생겨요.')
-    + (state.records.some(function(r){ return r.date > today; }) ? ' <span style="color:var(--muted)">· 속이 빈 점 = 예정</span>' : '');
+    + (state.records.some(function(r){ return isPlan(r, today); }) ? ' <span style="color:var(--muted)">· 속이 빈 점 = 예약</span>' : '');
   renderDayList();
   renderTimeline();
 }
@@ -1221,7 +1278,8 @@ function recCardHtml(r){
   if(r.shop) bits.push('🏪 ' + esc(r.shop));
   if(r.cost != null) bits.push('💸 ' + won(r.cost));
   var stars = r.rate > 0 ? '<span class="stars">' + '★'.repeat(r.rate) + '☆'.repeat(5-r.rate) + '</span>' : '';
-  var plan = r.date > todayStr() ? '<span class="badge soon" style="font-size:10px;padding:2px 8px">예정</span>' : '';
+  var plan = isPastPlan(r) ? '<span class="badge soon" style="font-size:10px;padding:2px 8px">예약 확인 필요</span>'
+    : (isPlan(r) ? '<span class="badge book" style="font-size:10px;padding:2px 8px">예약</span>' : '');
   var html = '<div class="rec-card">'
     + '<div class="rec-top"><span class="cat-dot" style="background:' + (it ? catColor(it.cat) : catColor('기타')) + '"></span>'
     + '<span class="rec-name">' + esc(it ? it.name : '삭제된 항목') + '</span>' + plan + stars + '</div>'
@@ -1272,7 +1330,7 @@ function renderTimeline(){
   recs.slice(0, tlLimit).forEach(function(r){
     var it = itemById(r.itemId);
     var bits = [];
-    if(r.date > today) bits.push('<span style="color:var(--gold-d);font-weight:800">예정</span>');
+    if(isPlan(r, today)) bits.push('<span style="color:var(--gold-d);font-weight:800">' + (isPastPlan(r, today) ? '예약 확인 필요' : '예약') + '</span>');
     if(r.shop) bits.push(esc(r.shop));
     if(r.cost != null) bits.push(won(r.cost));
     if(r.rate > 0) bits.push('<span class="stars">' + '★'.repeat(r.rate) + '</span>');
@@ -1303,7 +1361,7 @@ function barLabel(n){            /* 막대 위 작은 숫자: 4.5만 / 9천 */
 /* 비용이 적힌, 오늘까지의 기록 */
 function paidRecords(){
   var today = todayStr();
-  return state.records.filter(function(r){ return r.cost != null && r.cost > 0 && r.date <= today; });
+  return state.records.filter(function(r){ return r.cost != null && r.cost > 0 && !isPlan(r, today); });
 }
 function renderStat(){
   var today = todayStr();
@@ -1452,9 +1510,58 @@ function openGcal(itemId){
   setTimeout(function(){ try{ document.body.removeChild(a); }catch(e){} }, 0);
 }
 
+/* ─────────── ↩︎ 지운 뒤 되돌리기 ───────────
+   통째로 되돌리지 않고 '지운 것만' 다시 넣어서, 그 사이 다른 기기에서 바뀐 내용은 그대로 둠 */
+var UNDO_MS = 6000;
+function deleteRecordUndoable(rid, msg){
+  var rec = null;
+  state.records.forEach(function(r){ if(r.id === rid) rec = JSON.parse(JSON.stringify(r)); });
+  if(!rec) return;
+  state.records = state.records.filter(function(r){ return r.id !== rid; });
+  save();
+  renderAll();
+  showSnack(msg || '기록을 삭제했어요', '↩︎ 되돌리기', function(){
+    if(!itemById(rec.itemId)){ toast('항목이 없어 되돌릴 수 없어요'); return; }
+    if(!state.records.some(function(r){ return r.id === rec.id; })) state.records.push(rec);
+    save(); renderAll();
+    toast('되돌렸어요 ✓');
+  }, UNDO_MS);
+}
+function deleteItemUndoable(iid){
+  var it = itemById(iid);
+  if(!it) return;
+  var itCopy = JSON.parse(JSON.stringify(it));
+  var recs = JSON.parse(JSON.stringify(state.records.filter(function(r){ return r.itemId === iid; })));
+  state.items = state.items.filter(function(x){ return x.id !== iid; });
+  state.records = state.records.filter(function(r){ return r.itemId !== iid; });
+  save();
+  renderAll();
+  showSnack('"' + itCopy.name + '" 항목을 삭제했어요', '↩︎ 되돌리기', function(){
+    if(state.items.some(function(x){ return x.name === itCopy.name; })){ toast('같은 이름의 항목이 있어 되돌릴 수 없어요'); return; }
+    if(!catExists(itCopy.cat)) itCopy.cat = '기타';
+    state.items.push(itCopy);
+    recs.forEach(function(r){ if(!state.records.some(function(x){ return x.id === r.id; })) state.records.push(r); });
+    save(); renderAll();
+    toast('되돌렸어요 ✓ 기록 ' + recs.length + '건도 함께');
+  }, UNDO_MS);
+}
+
+/* ─────────── 📅 예약 확인 (날짜가 지난 예약) ─────────── */
+function planDone(rid){
+  var rec = null;
+  state.records.forEach(function(r){ if(r.id === rid){ delete r.plan; rec = r; } });
+  if(!rec) return;
+  save();
+  renderAll();
+  var it = itemById(rec.itemId);
+  var gT = it ? gcalTarget(it) : null;
+  if(gT) showSnack('받은 관리로 기록했어요 🌸 다음 ' + gT.kind + ' ' + fmtDate(gT.date).slice(5), '📅 캘린더에 넣기', function(){ openGcal(rec.itemId); });
+  else toast('받은 관리로 기록했어요 🌸');
+}
+
 /* ─────────── 스낵바 (버튼 달린 알림) ─────────── */
 var snackTimer = null, snackFn = null;
-function showSnack(msg, btnLabel, fn){
+function showSnack(msg, btnLabel, fn, ms){
   var el = $('snack');
   $('snackText').textContent = msg;
   $('snackBtn').textContent = btnLabel;
@@ -1462,12 +1569,68 @@ function showSnack(msg, btnLabel, fn){
   $('toast').classList.remove('on');
   el.classList.add('on');
   if(snackTimer) clearTimeout(snackTimer);
-  snackTimer = setTimeout(hideSnack, 5000);
+  snackTimer = setTimeout(hideSnack, ms || 5000);
 }
 function hideSnack(){
   $('snack').classList.remove('on');
   snackFn = null;
   if(snackTimer){ clearTimeout(snackTimer); snackTimer = null; }
+}
+
+/* ─────────── 🛡 기록 보호 안내 ───────────
+   ① 아이폰 사파리 탭에서 쓰는 중 + 가족 공유 꺼짐 → 홈 화면에 추가 권유
+      (사파리는 7일 넘게 안 연 사이트의 저장 내용을 지울 수 있음. 홈 화면 앱은 예외)
+   ② 가족 공유 꺼짐 + 30일 넘게 백업 안 함 → 백업 권유
+   '닫기'를 누르면 14일 동안 다시 안 띄움 */
+var GUARD_KEY = LS_KEY + '-guard';
+var guardHowOpen = false;
+function guardMeta(){
+  try{ var o = JSON.parse(localStorage.getItem(GUARD_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }catch(e){ return {}; }
+}
+function setGuardMeta(patch){
+  var o = guardMeta();
+  Object.keys(patch).forEach(function(k){ o[k] = patch[k]; });
+  try{ localStorage.setItem(GUARD_KEY, JSON.stringify(o)); }catch(e){}
+}
+function markBackedUp(){ setGuardMeta({lastBackup: Date.now()}); renderGuard(); }
+function isIOS(){
+  var ua = navigator.userAgent || '';
+  return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+}
+function daysSince(ts){ return ts ? Math.floor((Date.now() - ts) / 86400000) : null; }
+function guardKind(){
+  if(sync.status === 'on' || (sync.code && sync.code.length >= 8)) return null;   /* 클라우드에 사본 있음 */
+  var m = guardMeta();
+  var snoozed = function(k){ return m[k] && (Date.now() - m[k]) < 14 * 86400000; };
+  if(isIOS() && !standaloneApp() && !snoozed('snoozeHome')) return 'home';
+  if(state.records.length > 0 && !snoozed('snoozeBackup')){
+    var d = daysSince(m.lastBackup);
+    if(d === null || d >= 30) return 'backup';
+  }
+  return null;
+}
+function renderGuard(){
+  var el = $('guardBar');
+  if(!el) return;
+  var k = guardKind();
+  if(!k){ el.classList.add('hidden'); el.innerHTML = ''; return; }
+  var html;
+  if(k === 'home'){
+    html = '<b>📲 홈 화면에 추가하면 기록이 더 안전해요</b>'
+      + '사파리에서 7일 넘게 안 열면 저장된 기록이 지워질 수 있어요. 홈 화면 앱이나 ☁️ 가족 공유는 괜찮아요.'
+      + (guardHowOpen ? '<div class="how">① 아래쪽 <b style="display:inline">공유 버튼(□↑)</b>을 누르고<br>② <b style="display:inline">홈 화면에 추가</b> → 추가<br>③ 홈 화면의 🌸 꽃단장 아이콘으로 열어 주세요<br><span style="color:var(--muted)">※ 홈 화면 앱은 사파리와 저장 공간이 따로라서, 지금 기록은 [설정 → 📋 백업 복사] 후 앱에서 붙여 넣거나 ☁️ 가족 공유로 옮겨요.</span></div>' : '')
+      + '<div class="row"><button class="main" data-guard="how">' + (guardHowOpen ? '접기' : '추가하는 방법') + '</button>'
+      + '<button data-guard="sync">☁️ 공유 켜기</button><button data-guard="later">닫기</button></div>';
+  } else {
+    var d = daysSince(guardMeta().lastBackup);
+    html = '<b>💾 ' + (d === null ? '아직 백업한 적이 없어요' : '마지막 백업이 ' + d + '일 전이에요') + '</b>'
+      + '기록은 이 폰에만 있어요. 폰을 바꾸거나 앱을 지우면 사라지니 가끔 백업해 두세요.'
+      + '<div class="row"><button class="main" data-guard="backup">⬇️ 백업 내려받기</button>'
+      + '<button data-guard="sync">☁️ 가족 공유</button><button data-guard="later">나중에</button></div>';
+  }
+  el.innerHTML = html;
+  el.setAttribute('data-kind', k);
+  el.classList.remove('hidden');
 }
 
 /* ─────────── 설정 렌더 ─────────── */
@@ -1485,6 +1648,8 @@ function renderSet(){
       info = '이 기기에 자동 저장 중';
     }
   }catch(e){ info = '자동 저장 상태를 확인할 수 없어요'; }
+  var lb = daysSince(guardMeta().lastBackup);
+  info += (lb === null ? ' · 아직 백업 안 함' : ' · 마지막 백업 ' + (lb === 0 ? '오늘' : lb + '일 전'));
   $('setStorage').textContent = info;
   var impNote = $('importNote');
   if(impNote) impNote.textContent = '파일을 선택하거나 백업 JSON을 붙여넣으세요. 불러오기 전에 확인창이 뜨고, 직전 상태는 한 번 되돌릴 수 있어요.'
@@ -1537,7 +1702,36 @@ function updateDupNote(){
     $('recSave').textContent = '저장';
   }
 }
-function openRecordSheet(dateStr, recordId, fromDetailItemId){
+var recMode = 'rec';              /* 'rec' = 관리 기록, 'book' = 예약 잡기 */
+function tomorrowStr(){ return addCycle(todayStr(), 1, 'd'); }
+/* 날짜에 따라 안내 문구 · 만족도 칸 바꾸기 */
+function updatePlanHint(){
+  var d = $('recDate').value, today = todayStr();
+  var hint = $('recPlanHint');
+  var future = isDateStr(d) && d > today;
+  var editingPlan = false;
+  if(editingRecordId) state.records.forEach(function(r){ if(r.id === editingRecordId && r.plan) editingPlan = true; });
+  var msg = '';
+  if(recMode === 'book' || future) msg = '📅 예약으로 저장돼요 · 날짜가 지나면 받으셨는지 카드에서 물어볼게요';
+  else if(editingPlan) msg = '✓ 이 날짜에 받은 관리로 기록돼요';
+  hint.textContent = msg;
+  hint.classList.toggle('hidden', !msg);
+  $('recRateWrap').classList.toggle('hidden', recMode === 'book' || future);
+  $('recDateLbl').textContent = (recMode === 'book' || future) ? '예약한 날' : '관리한 날';
+}
+/* 📅 예약 잡기: 권장일이 아직 안 지났으면 권장일, 아니면 내일로 시작 */
+function openBookSheet(itemId){
+  var it = itemById(itemId);
+  if(!it) return;
+  var st = statusOf(it);
+  var d = (st.due && st.due > todayStr()) ? st.due : tomorrowStr();
+  openRecordSheet(d, null, null, 'book');
+  $('recItem').value = itemId;
+  $('recShop').value = it.shop || '';
+  updateDupNote();
+}
+function openRecordSheet(dateStr, recordId, fromDetailItemId, mode){
+  recMode = (mode === 'book') ? 'book' : 'rec';
   var recForSel = null;
   if(recordId) state.records.forEach(function(r){ if(r.id === recordId) recForSel = r; });
   if(activeItems().length === 0 && !recForSel){ toast('먼저 관리 항목을 추가해 주세요 🌸'); return; }
@@ -1546,7 +1740,9 @@ function openRecordSheet(dateStr, recordId, fromDetailItemId){
   returnToItem = fromDetailItemId || null;
   dupArmed = false;
   $('recSave').textContent = '저장';
-  $('recTitle').textContent = recordId ? '기록 수정' : '관리 기록';
+  $('recTitle').textContent = recMode === 'book' ? '📅 예약 잡기'
+    : (recordId ? ((recForSel && recForSel.plan) ? '예약 수정' : '기록 수정') : '관리 기록');
+  $('recDate').min = recMode === 'book' ? tomorrowStr() : '';
   $('recDelete').classList.toggle('hidden', !recordId);
   var rateRow = $('recRate');
   rateRow.innerHTML = '';
@@ -1591,6 +1787,7 @@ function openRecordSheet(dateStr, recordId, fromDetailItemId){
   }
   paintRate();
   updateDupNote();
+  updatePlanHint();
   openSheet('sheetRecord');
 }
 function saveRecord(){
@@ -1598,6 +1795,8 @@ function saveRecord(){
   var date = $('recDate').value;
   if(!itemId){ toast('관리 항목을 선택해 주세요'); return; }
   if(!isDateStr(date)){ toast('관리한 날짜를 확인해 주세요'); return; }
+  if(recMode === 'book' && date <= todayStr()){ toast('예약은 내일 이후 날짜로 골라 주세요'); return; }
+  var asPlan = date > todayStr();     /* 미래 날짜 = 예약, 오늘·지난 날짜 = 받은 관리 */
   var costRaw = $('recCost').value.trim();
   var cost = costRaw === '' ? null : Math.max(0, Math.round(+costRaw));
   if(costRaw !== '' && (cost == null || isNaN(cost))){ toast('비용은 숫자로 입력해 주세요'); return; }
@@ -1617,20 +1816,23 @@ function saveRecord(){
         r.itemId = itemId; r.date = date;
         r.shop = $('recShop').value.trim();
         r.cost = cost;
-        r.rate = editingRate;
+        r.rate = asPlan ? 0 : editingRate;
         r.memo = $('recMemo').value.trim();
+        if(asPlan) r.plan = true; else delete r.plan;
       }
     });
     toast('기록을 고쳤어요 ✓');
   } else {
-    state.records.push({
+    var nr = {
       id: uid(), itemId: itemId, date: date,
       shop: $('recShop').value.trim(),
-      cost: cost, rate: editingRate,
+      cost: cost, rate: asPlan ? 0 : editingRate,
       memo: $('recMemo').value.trim(),
       createdAt: todayStr()
-    });
-    toast('관리 기록을 남겼어요 🌸');
+    };
+    if(asPlan) nr.plan = true;
+    state.records.push(nr);
+    toast(asPlan ? '예약을 잡았어요 📅' : '관리 기록을 남겼어요 🌸');
   }
   save();
   var back = returnToItem;
@@ -1641,7 +1843,8 @@ function saveRecord(){
   var savedItem = itemById(itemId);
   var gT = savedItem ? gcalTarget(savedItem) : null;
   if(gT && (date > todayStr() ? gT.kind === '예약' && gT.date === date : (gT.st.last && gT.st.last.date === date))){
-    showSnack((editingRecordId ? '고쳤어요 ✓' : '기록했어요 🌸') + ' 다음 ' + gT.kind + ' ' + fmtDate(gT.date).slice(5),
+    showSnack((asPlan ? (editingRecordId ? '예약을 바꿨어요 📅' : '예약했어요 📅') + ' ' + fmtDate(date).slice(5)
+               : (editingRecordId ? '고쳤어요 ✓' : '기록했어요 🌸') + ' 다음 ' + gT.kind + ' ' + fmtDate(gT.date).slice(5)),
       '📅 캘린더에 넣기', function(){ openGcal(itemId); });
   }
   if(back && itemById(back)) setTimeout(function(){ openDetail(back); }, 40);
@@ -1689,12 +1892,20 @@ function deleteCustomCat(cid){
   if(!cat) return;
   var n = state.items.filter(function(it){ return it.cat === cat.name; }).length;
   askConfirm('카테고리 삭제', '"' + cat.name + '" 카테고리를 지울까요?' + (n ? '\n이 카테고리의 항목 ' + n + '개는 \'기타\'로 옮겨져요. 기록은 그대로예요.' : ''), '삭제', function(){
-    state.items.forEach(function(it){ if(it.cat === cat.name) it.cat = '기타'; });
+    var catCopy = JSON.parse(JSON.stringify(cat));
+    var moved = [];
+    state.items.forEach(function(it){ if(it.cat === cat.name){ it.cat = '기타'; moved.push(it.id); } });
     state.cats = state.cats.filter(function(c){ return c.id !== cid; });
     if(filter === cat.name) filter = '전체';
     save();
     renderAll();
-    toast('카테고리를 지웠어요');
+    showSnack('"' + catCopy.name + '" 카테고리를 지웠어요', '↩︎ 되돌리기', function(){
+      if(catExists(catCopy.name)){ toast('같은 이름의 카테고리가 있어 되돌릴 수 없어요'); return; }
+      state.cats.push(catCopy);
+      state.items.forEach(function(it){ if(moved.indexOf(it.id) >= 0 && it.cat === '기타') it.cat = catCopy.name; });
+      save(); renderAll();
+      toast('되돌렸어요 ✓');
+    }, UNDO_MS);
   });
 }
 
@@ -1809,7 +2020,7 @@ function openDetail(itemId){
       if(r.memo) bits.push(esc(r.memo));
       html += '<div class="dt-row">'
         + '<div class="dt-date">' + esc(fmtDate(r.date))
-        +   (r.date > today ? ' <span style="color:var(--gold-d)">· 예정</span>' : '') + '</div>'
+        +   (isPlan(r, today) ? ' <span style="color:var(--gold-d)">· ' + (isPastPlan(r, today) ? '예약 확인 필요' : '예약') + '</span>' : '') + '</div>'
         + (bits.length ? '<div class="dt-body">' + bits.join('<span class="sep">·</span>') + '</div>' : '')
         + '<div class="rec-btns"><button class="mini-btn" data-redit="' + esc(r.id) + '">수정</button>'
         +   '<button class="mini-btn danger" data-rdel="' + esc(r.id) + '">삭제</button></div>'
@@ -1866,6 +2077,7 @@ function download(){
       try{ URL.revokeObjectURL(a.href); document.body.removeChild(a); }catch(e){}
     }, 400);
     toast('백업 파일을 내려받았어요 ⬇️ · 안 보이면 [📋 백업 복사]를 눌러 주세요');
+    markBackedUp();
   }catch(e){
     var box = $('pasteBox');
     if(box){ box.value = text; box.classList.remove('hidden'); }
@@ -1874,7 +2086,7 @@ function download(){
 }
 function copyBackup(text){
   var body = (typeof text === 'string') ? text : JSON.stringify(state);
-  var done = function(){ toast('백업 내용을 복사했어요 📋'); };
+  var done = function(){ toast('백업 내용을 복사했어요 📋'); markBackedUp(); };
   var fail = function(){
     var box = $('pasteBox');
     box.value = body;
@@ -2516,6 +2728,7 @@ function renderSyncBox(){
   if(last) last.textContent = lastSyncText();
 }
 function paintCloud(){
+  renderGuard();
   var dot = $('cloudDot');
   if(dot){
     dot.classList.toggle('hidden', sync.status === 'off');
@@ -2596,8 +2809,31 @@ function bind(){
     if(led){ openItemSheet(led.dataset.edit); return; }
     var gc = e.target.closest('[data-gcal]');
     if(gc){ openGcal(gc.dataset.gcal); return; }
+    var bk = e.target.closest('[data-book]');
+    if(bk){ openBookSheet(bk.dataset.book); return; }
+    var pd = e.target.closest('[data-pdone]');
+    if(pd){ planDone(pd.dataset.pdone); return; }
+    var pe = e.target.closest('[data-pedit]');
+    if(pe){ openRecordSheet(null, pe.dataset.pedit); return; }
+    var pc = e.target.closest('[data-pcancel]');
+    if(pc){ deleteRecordUndoable(pc.dataset.pcancel, '예약을 지웠어요'); return; }
   });
   $('btnAddItem').addEventListener('click', function(){ openItemSheet(null); });
+
+  /* 🛡 기록 보호 안내 */
+  $('guardBar').addEventListener('click', function(e){
+    var b = e.target.closest('[data-guard]');
+    if(!b) return;
+    var act = b.dataset.guard, kind = $('guardBar').getAttribute('data-kind');
+    if(act === 'how'){ guardHowOpen = !guardHowOpen; renderGuard(); }
+    else if(act === 'backup'){ download(); }
+    else if(act === 'sync'){ switchTab('set'); setTimeout(function(){ var sb = $('syncBox'); if(sb && sb.scrollIntoView) sb.scrollIntoView({behavior:'smooth', block:'center'}); }, 60); }
+    else if(act === 'later'){
+      var patch = {}; patch[kind === 'home' ? 'snoozeHome' : 'snoozeBackup'] = Date.now();
+      setGuardMeta(patch); renderGuard();
+      toast('14일 뒤에 다시 알려 드릴게요');
+    }
+  });
 
   /* 🗂 보관함 */
   $('archive').addEventListener('click', function(e){
@@ -2697,17 +2933,16 @@ function bind(){
   $('recItem').addEventListener('change', updateDupNote);
   $('recDate').addEventListener('change', updateDupNote);
   $('recDate').addEventListener('input', updateDupNote);
+  $('recDate').addEventListener('change', updatePlanHint);
+  $('recDate').addEventListener('input', updatePlanHint);
   $('recCancel').addEventListener('click', closeSheets);
   $('recSave').addEventListener('click', saveRecord);
   $('recDelete').addEventListener('click', function(){
     if(!editingRecordId) return;
     var rid = editingRecordId;
     askConfirm('기록 삭제', '이 관리 기록을 삭제할까요?\n항목의 마지막 관리일도 함께 되돌아가요.', '삭제', function(){
-      state.records = state.records.filter(function(r){ return r.id !== rid; });
-      save();
       closeSheets();
-      renderAll();
-      toast('기록을 삭제했어요');
+      deleteRecordUndoable(rid);
     });
   });
 
@@ -2720,12 +2955,8 @@ function bind(){
     var it = itemById(iid);
     var n = state.records.filter(function(r){ return r.itemId === iid; }).length;
     askConfirm('항목 삭제', '"' + (it ? it.name : '') + '" 항목과 함께 기록 ' + n + '건도 지워져요.\n정말 삭제할까요?', '삭제', function(){
-      state.items = state.items.filter(function(x){ return x.id !== iid; });
-      state.records = state.records.filter(function(r){ return r.itemId !== iid; });
-      save();
       closeSheets();
-      renderAll();
-      toast('항목을 삭제했어요');
+      deleteItemUndoable(iid);
     });
   });
 
@@ -2907,10 +3138,7 @@ document.addEventListener('touchcancel', sheetDragEnd, {passive:true});
 
 function confirmDeleteRecord(rid, backItemId){
   askConfirm('기록 삭제', '이 관리 기록을 삭제할까요?\n항목의 마지막 관리일도 함께 되돌아가요.', '삭제', function(){
-    state.records = state.records.filter(function(r){ return r.id !== rid; });
-    save();
-    renderAll();
-    toast('기록을 삭제했어요');
+    deleteRecordUndoable(rid);
     if(backItemId && itemById(backItemId)) setTimeout(function(){ openDetail(backItemId); }, 40);
   });
 }
