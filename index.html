@@ -1549,10 +1549,8 @@ function mergeStates(base, local, cloud){
   var alive = {};
   out.items.forEach(function(x){ alive[x.id] = 1; });
   out.records = out.records.filter(function(r){ return !!alive[r.itemId]; });
-  out.records.sort(function(x,y){
-    if(x.date !== y.date) return x.date < y.date ? -1 : 1;
-    return byIdAsc(x, y);
-  });
+  /* 병합 결과도 저장·불러오기와 같은 규칙(이름 중복 합치기 등)으로 정리 */
+  out = normalize({version:1, items:out.items, records:out.records});
   out.conflicts = it.conflicts + rc.conflicts;
   return out;
 }
