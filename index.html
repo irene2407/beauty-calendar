@@ -330,6 +330,9 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
         <button class="set-btn primary" id="btnBackup">⬇️ 백업 내려받기</button>
         <button class="set-btn" id="btnCopy">📋 백업 복사</button>
       </div>
+      <div class="set-row" style="margin-top:8px">
+        <button class="set-btn" id="btnRefresh" style="flex:1 1 100%">↻ 화면·클라우드 새로고침</button>
+      </div>
     </div>
     <div class="set-card">
       <div style="font-size:13px;font-weight:800">☁️ 실시간 공유 (가족 동기화)</div>
@@ -2162,6 +2165,7 @@ function bind(){
   });
   $('btnBackup').addEventListener('click', download);
   $('btnCopy').addEventListener('click', copyBackup);
+  $('btnRefresh').addEventListener('click', refreshNow);
   $('btnLoadFile').addEventListener('click', function(){ $('fileInput').click(); });
   $('fileInput').addEventListener('change', function(){
     if(this.files && this.files[0]) importFile(this.files[0]);
