@@ -91,9 +91,17 @@ button{font-family:inherit}
   background:radial-gradient(circle,#FBE2D4 0%,rgba(251,226,212,0) 70%);pointer-events:none}
 .hero>*{position:relative;z-index:1}
 .hero-stats{display:flex;gap:10px;margin-top:12px}
-.stat{flex:1;background:rgba(255,255,255,.88);border:1px solid #F3E8DB;border-radius:16px;padding:10px 12px}
+.stat{flex:1 1 0;min-width:0;display:block;background:rgba(255,255,255,.88);border:1px solid #F3E8DB;border-radius:16px;padding:10px 12px;
+  text-align:left;cursor:pointer;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;
+  transition:transform .12s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease}
 .stat b{display:block;font-size:19px;font-weight:800;color:var(--rose-d);letter-spacing:-.02em}
 .stat span{display:block;margin-top:2px;font-size:10.5px;color:var(--muted);font-weight:700}
+.stat:active{transform:scale(.97)}
+.stat:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+.stat.on{border-color:rgba(214,118,131,.55);background:linear-gradient(160deg,#FFF3F0,#FFF9F6);
+  box-shadow:0 4px 14px rgba(214,118,131,.16)}
+.stat.on span{color:var(--rose-d)}
+#listHead{scroll-margin-top:calc(84px + env(safe-area-inset-top))}
 .hero-note{margin:10px 2px 0;font-size:11.5px;color:var(--ink-2);font-weight:600}
 
 /* ── filter chips ── */
@@ -109,6 +117,10 @@ button{font-family:inherit}
 .item-top{display:flex;align-items:flex-start;gap:9px}
 .cat-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:6px}
 .item-name{font-size:15.5px;font-weight:800;letter-spacing:-.02em;line-height:1.3;flex:1;min-width:0}
+.item-edit{flex:0 0 auto;width:32px;height:32px;margin:-4px -3px 0 0;padding:0;border-radius:10px;
+  border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:14px;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;transition:background .15s ease}
+.item-edit:active{background:var(--blush);transform:scale(.96)}
 .badge{flex:0 0 auto;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:-.01em;
   border:1px solid transparent}
 .badge.ok{background:var(--mint-bg);color:var(--mint-ink);border-color:#DDE9DE}
@@ -288,15 +300,15 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
         <div style="font-size:13px;font-weight:800;color:var(--label)" id="heroDate">오늘</div>
         <div style="font-size:11px;font-weight:700;color:var(--muted)" id="heroDday"></div>
       </div>
-      <div class="hero-stats">
-        <div class="stat"><b id="statTotal">0</b><span>관리 항목</span></div>
-        <div class="stat"><b id="statSoon">0</b><span>슬슬 갈 때!</span></div>
-        <div class="stat"><b id="statOver">0</b><span>관리 시기 지남</span></div>
+      <div class="hero-stats" id="heroStats">
+        <button type="button" class="stat" data-stat="all" id="statBoxAll" aria-pressed="false" aria-label="기록이 있는 관리 항목만 보기"><b id="statTotal">0</b><span>관리 항목</span></button>
+        <button type="button" class="stat" data-stat="soon" id="statBoxSoon" aria-pressed="false" aria-label="슬슬 갈 때인 항목만 보기"><b id="statSoon">0</b><span>슬슬 갈 때!</span></button>
+        <button type="button" class="stat" data-stat="over" id="statBoxOver" aria-pressed="false" aria-label="관리 시기가 지난 항목만 보기"><b id="statOver">0</b><span>관리 시기 지남</span></button>
       </div>
       <p class="hero-note" id="heroNote"></p>
     </div>
 
-    <div class="sec-head"><span class="sec-title">관리 현황</span><span class="sec-sub" id="filterCount"></span></div>
+    <div class="sec-head" id="listHead"><span class="sec-title">관리 현황</span><span class="sec-sub" id="filterCount"></span></div>
     <div class="chips" id="chips"></div>
     <div id="itemList" style="margin-top:12px"></div>
     <div class="add-wrap"><button class="btn-add" id="btnAddItem">＋ 관리 항목 추가</button></div>
@@ -498,6 +510,14 @@ var state = null;
 var undoSnapshot = null;
 
 var filter = '전체';
+/* 요약 박스(data-stat) → 필터 값. 첫 박스는 '기록이 있는 항목', 나머지는 그 상태만 */
+var STAT_FILTERS = {all:'hasRecord', soon:'soon', over:'over'};
+/* 항목별 기록 건수 (미래 날짜 예정도 기록으로 샘) */
+function recordCountOf(itemId){
+  var n = 0;
+  state.records.forEach(function(r){ if(r.itemId === itemId) n++; });
+  return n;
+}
 var calY = 0, calM = 0;          /* 달력 기준 연/월 (0-based month) */
 var selDate = null;              /* 달력에서 선택한 날짜 */
 var editingRecordId = null;
@@ -779,6 +799,27 @@ function askConfirm(title, body, yesLabel, cb, cancelCb){
 }
 
 /* ─────────── 홈 렌더 ─────────── */
+function renderStatBoxes(){
+  var boxes = [
+    ['statBoxAll',  'hasRecord'],
+    ['statBoxSoon', 'soon'],
+    ['statBoxOver', 'over']
+  ];
+  boxes.forEach(function(p){
+    var el = $(p[0]);
+    if(!el) return;
+    var on = (filter === p[1]);
+    el.classList.toggle('on', on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+/* 요약 박스를 누르면 관리 현황 목록이 화면 위쪽에 오도록 부드럽게 스크롤 */
+function scrollToItemList(){
+  var el = $('listHead') || $('chips');
+  if(!el || !el.scrollIntoView) return;
+  try{ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  catch(e){ el.scrollIntoView(true); }
+}
 function renderChips(){
   var list = ['전체','피부과','속눈썹','네일·패디','헤어','기타','갈 때 된 것만'];
   var need = state.items.filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over'; }).length;
@@ -792,7 +833,11 @@ function renderChips(){
 }
 function visibleItems(){
   var arr = state.items.slice();
-  if(filter === '갈 때 된 것만'){
+  if(filter === 'soon' || filter === 'over'){
+    arr = arr.filter(function(it){ return statusOf(it).key === filter; });
+  } else if(filter === 'hasRecord'){
+    arr = arr.filter(function(it){ return recordCountOf(it.id) > 0; });
+  } else if(filter === '갈 때 된 것만'){
     arr = arr.filter(function(it){
       var st = statusOf(it);
       return st.key === 'soon' || st.key === 'over';
@@ -819,7 +864,12 @@ function renderItems(){
     return;
   }
   if(arr.length === 0){
-    host.innerHTML = '<div class="card empty-box">이 조건에 해당하는 항목이 없어요.<br>관리 마치고 오면 카드가 여기 생겨요 ✨</div>';
+    var emptyMsg;
+    if(filter === 'soon') emptyMsg = '지금 슬슬 갈 때가 된 항목이 없어요.<br>다음 권장일까지 여유가 있어요 🌷';
+    else if(filter === 'over') emptyMsg = '관리 시기가 지난 항목이 없어요.<br>잘 챙기고 계세요 ✨';
+    else if(filter === 'hasRecord') emptyMsg = '아직 기록을 남긴 항목이 없어요.<br>‘전체’에서 항목을 골라 첫 기록을 남겨 보세요 🌸';
+    else emptyMsg = '이 조건에 해당하는 항목이 없어요.<br>관리 마치고 오면 카드가 여기 생겨요 ✨';
+    host.innerHTML = '<div class="card empty-box">' + emptyMsg + '</div>';
     $('filterCount').textContent = '0개';
     return;
   }
@@ -843,6 +893,7 @@ function renderItems(){
       +   '<span class="cat-dot" style="background:' + CAT_COLOR[it.cat] + '"></span>'
       +   '<div class="item-name">' + esc(it.name) + '</div>'
       +   '<span class="badge ' + meta.cls + '">' + meta.text + '</span>'
+      +   '<button type="button" class="item-edit" data-edit="' + esc(it.id) + '" aria-label="' + esc(it.name) + ' 항목 수정·삭제" title="항목 수정·삭제">✎</button>'
       + '</div>'
       + '<div class="item-meta">' + metaLine + '</div>'
       + '<div class="dplus">' + dplus(st) + '</div>'
@@ -861,15 +912,16 @@ function renderHome(){
   var t = todayStr();
   var d = parseD(t);
   $('heroDate').textContent = (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' + ['일','월','화','수','목','금','토'][d.getDay()] + ' · 오늘의 꽃단장';
-  var soon=0, over=0, plan=0;
+  var soon=0, over=0, plan=0, recorded=0;
   state.items.forEach(function(it){
     var st = statusOf(it);
     var k = st.key;
     if(k==='soon') soon++;
     if(k==='over') over++;
     if(st.planned) plan++;
+    if(recordCountOf(it.id) > 0) recorded++;
   });
-  $('statTotal').textContent = state.items.length;
+  $('statTotal').textContent = recorded;
   $('statSoon').textContent = soon;
   $('statOver').textContent = over;
   var dd = $('heroDday');
@@ -883,6 +935,7 @@ function renderHome(){
   $('topSummary').textContent = '항목 ' + state.items.length + ' · 기록 ' + state.records.length + '건';
   renderChips();
   renderItems();
+  renderStatBoxes();
 }
 
 /* ─────────── 달력 렌더 ─────────── */
@@ -2024,7 +2077,21 @@ function bind(){
     filter = chip.dataset.chip;
     renderChips();
     renderItems();
+    renderStatBoxes();
   });
+  /* 상단 요약 박스 → 아래 관리 현황 목록 필터 + 부드리스크롤 */
+  if($('heroStats')){
+    $('heroStats').addEventListener('click', function(e){
+      var box = e.target.closest('[data-stat]');
+      if(!box) return;
+      var next = STAT_FILTERS[box.dataset.stat] || '전체';
+      filter = (filter === next) ? '전체' : next;
+      renderChips();
+      renderItems();
+      renderStatBoxes();
+      scrollToItemList();
+    });
+  }
   $('itemList').addEventListener('click', function(e){
     var done = e.target.closest('[data-done]');
     if(done){
@@ -2037,7 +2104,9 @@ function bind(){
       return;
     }
     var det = e.target.closest('[data-detail]');
-    if(det) openDetail(det.dataset.detail);
+    if(det){ openDetail(det.dataset.detail); return; }
+    var led = e.target.closest('[data-edit]');
+    if(led){ openItemSheet(led.dataset.edit); return; }
   });
   $('btnAddItem').addEventListener('click', function(){ openItemSheet(null); });
 
