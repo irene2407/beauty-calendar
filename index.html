@@ -96,6 +96,8 @@ button{font-family:inherit}
   transition:transform .12s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease}
 .stat b{display:block;font-size:19px;font-weight:800;color:var(--rose-d);letter-spacing:-.02em}
 .stat span{display:block;margin-top:2px;font-size:10.5px;color:var(--muted);font-weight:700}
+.stat b .stat-num{display:inline;margin:0;font-size:inherit;font-weight:inherit;color:inherit}
+.stat b .stat-of{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0}
 .stat:active{transform:scale(.97)}
 .stat:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
 .stat.on{border-color:rgba(214,118,131,.55);background:linear-gradient(160deg,#FFF3F0,#FFF9F6);
@@ -301,7 +303,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
         <div style="font-size:11px;font-weight:700;color:var(--muted)" id="heroDday"></div>
       </div>
       <div class="hero-stats" id="heroStats">
-        <button type="button" class="stat" data-stat="all" id="statBoxAll" aria-pressed="false" aria-label="기록이 있는 관리 항목만 보기"><b id="statTotal">0</b><span>관리 항목</span></button>
+        <button type="button" class="stat" data-stat="all" id="statBoxAll" aria-pressed="false" aria-label="관리 중인 항목(기록이 있는 항목)만 보기"><b><span id="statTotal" class="stat-num">0</span><small id="statTotalOf" class="stat-of"></small></b><span>관리 중인 항목</span></button>
         <button type="button" class="stat" data-stat="soon" id="statBoxSoon" aria-pressed="false" aria-label="슬슬 갈 때인 항목만 보기"><b id="statSoon">0</b><span>슬슬 갈 때!</span></button>
         <button type="button" class="stat" data-stat="over" id="statBoxOver" aria-pressed="false" aria-label="관리 시기가 지난 항목만 보기"><b id="statOver">0</b><span>관리 시기 지남</span></button>
       </div>
@@ -937,6 +939,8 @@ function renderHome(){
     if(recordCountOf(it.id) > 0) recorded++;
   });
   $('statTotal').textContent = recorded;
+  /* 전체 항목 수를 옆에 작게 붙여 "3 / 8"처럼 보이게 (헤더의 '항목 8'과 헷갈리지 않도록) */
+  $('statTotalOf').textContent = state.items.length ? (' / ' + state.items.length) : '';
   $('statSoon').textContent = soon;
   $('statOver').textContent = over;
   var dd = $('heroDday');
