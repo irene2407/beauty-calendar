@@ -624,7 +624,7 @@ function visibleItems(){
   } else if(filter !== '전체'){
     arr = arr.filter(function(it){ return it.cat === filter; });
   }
-  var rank = {over:0, soon:1, none:2, ok:3};
+  var rank = {over:0, soon:1, ok:2, none:3};
   arr.sort(function(a,b){
     var sa = statusOf(a), sb = statusOf(b);
     if(rank[sa.key] !== rank[sb.key]) return rank[sa.key] - rank[sb.key];
