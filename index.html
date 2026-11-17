@@ -762,9 +762,13 @@ function dueLine(st){
 
 /* ─────────── 시트 열기/닫기 ─────────── */
 function openSheet(id){
-  scrollLockY = window.pageYOffset || document.documentElement.scrollTop || 0;
-  document.body.classList.add('sheet-open');
-  document.body.style.top = (-scrollLockY) + 'px';
+  /* 이미 다른 시트가 열려 있으면(확인창을 위에 띄우는 경우) 화면이 고정된 상태라
+     지금 스크롤 위치는 0으로 읽힘 → 처음 기억한 위치를 그대로 둔다 */
+  if(!document.body.classList.contains('sheet-open')){
+    scrollLockY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    document.body.classList.add('sheet-open');
+    document.body.style.top = (-scrollLockY) + 'px';
+  }
   $('back').classList.add('on');
   var sh = $(id);
   sh.classList.add('on');
@@ -796,6 +800,17 @@ function askConfirm(title, body, yesLabel, cb, cancelCb){
   confirmCb = cb || null;
   confirmCancel = cancelCb || null;
   openSheet('sheetConfirm');
+}
+/* 확인창 아래에 다른 시트(항목 수정·상세 등)가 열려 있는지 */
+function sheetUnderConfirm(){
+  return ['sheetRecord','sheetItem','sheetDetail','sheetMerge'].some(function(id){
+    return $(id).classList.contains('on');
+  });
+}
+/* 확인창만 닫기: 아래 시트가 있으면 그 화면으로 돌아가고, 없으면 전부 닫기 */
+function closeConfirmOnly(){
+  if(sheetUnderConfirm()){ $('sheetConfirm').classList.remove('on'); }
+  else { closeSheets(); }
 }
 
 /* ─────────── 홈 렌더 ─────────── */
@@ -1014,8 +1029,8 @@ function recCardHtml(r){
     + '<span class="rec-name">' + esc(it ? it.name : '삭제된 항목') + '</span>' + plan + stars + '</div>'
     + (bits.length ? '<div class="rec-meta">' + bits.join('<span class="sep">·</span>') + '</div>' : '')
     + (r.memo ? '<div class="rec-memo">' + esc(r.memo) + '</div>' : '')
-    + '<div class="rec-btns"><button class="mini-btn" data-redit="' + r.id + '">수정</button>'
-    + '<button class="mini-btn danger" data-rdel="' + r.id + '">삭제</button></div>'
+    + '<div class="rec-btns"><button class="mini-btn" data-redit="' + esc(r.id) + '">수정</button>'
+    + '<button class="mini-btn danger" data-rdel="' + esc(r.id) + '">삭제</button></div>'
     + '</div>';
   return html;
 }
@@ -2195,7 +2210,7 @@ function bind(){
   $('cfNo').addEventListener('click', function(){
     var cancel = confirmCancel;
     confirmCb = null; confirmCancel = null;
-    closeSheets();
+    closeConfirmOnly();
     if(cancel) setTimeout(cancel, 60);
   });
   $('cfYes').addEventListener('click', function(){
@@ -2211,6 +2226,8 @@ function bind(){
       setTimeout(cancelConnect, 30);
       return;
     }
+    /* 확인창이 떠 있을 때 바깥을 누르면 [취소]와 똑같이 */
+    if($('sheetConfirm').classList.contains('on')){ $('cfNo').click(); return; }
     closeSheets();
   });
 
