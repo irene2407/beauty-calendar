@@ -2754,17 +2754,7 @@ function bind(){
     closeSheets();
     if(cb) cb();
   });
-  $('back').addEventListener('click', function(){
-    /* 병합 선택을 그냥 닫으면 연결을 시작하지 않은 상태로 정리 */
-    if($('sheetMerge').classList.contains('on') && sync.pendingRef){
-      closeSheets();
-      setTimeout(cancelConnect, 30);
-      return;
-    }
-    /* 확인창이 떠 있을 때 바깥을 누르면 [취소]와 똑같이 */
-    if($('sheetConfirm').classList.contains('on')){ $('cfNo').click(); return; }
-    closeSheets();
-  });
+  $('back').addEventListener('click', closeTopSheet);
 
   /* 연결 시 병합 선택 (양쪽 건수 · 사라지는 쪽 안내) */
   $('mrgTakeCloud').addEventListener('click', function(){ closeSheets(); setTimeout(mergeTakeCloud, 30); });
@@ -2841,6 +2831,79 @@ function bind(){
       : '전체를 초기화했어요 · 설정에서 되돌릴 수 있어요');
   });
 }
+
+/* 바깥 탭 · 아래로 쓸어내리기 = 맨 위 화면 닫기 (취소와 같음) */
+function closeTopSheet(){
+  /* 확인창이 떠 있으면 [취소]와 똑같이 (아래 화면으로 돌아감) */
+  if($('sheetConfirm').classList.contains('on')){ $('cfNo').click(); return; }
+  /* 병합 선택을 그냥 닫으면 연결을 시작하지 않은 상태로 정리 */
+  if($('sheetMerge').classList.contains('on') && sync.pendingRef){
+    closeSheets();
+    setTimeout(cancelConnect, 30);
+    return;
+  }
+  closeSheets();
+}
+
+/* ───────── 아래로 쓸어내려 화면 닫기 ─────────
+   · 맨 위 화면에서만, 그 화면이 맨 위까지 스크롤된 상태에서만
+   · 입력칸·별점·색 고르기에서 시작한 손짓은 무시
+   · 110px 이상 내리거나, 빠르게 휙 내리면 닫힘 / 덜 내리면 제자리로 */
+var sdrag = {on:false, el:null, y0:0, dy:0, t0:0};
+function topSheet(){
+  var order = ['sheetConfirm','sheetMerge','sheetRecord','sheetItem','sheetDetail'];
+  for(var i = 0; i < order.length; i++){ if($(order[i]).classList.contains('on')) return $(order[i]); }
+  return null;
+}
+document.addEventListener('touchstart', function(ev){
+  sdrag.on = false;
+  if(ev.touches.length !== 1) return;
+  var sh = ev.target.closest ? ev.target.closest('.sheet.on') : null;
+  if(!sh || sh !== topSheet()) return;
+  if(ev.target.closest('input,textarea,select,.rate-row,.swatches')) return;
+  if(sh.scrollTop > 0) return;
+  sdrag = {on:true, el:sh, y0:ev.touches[0].clientY, dy:0, t0:Date.now(), pts:[[Date.now(), 0]]};
+}, {passive:true});
+document.addEventListener('touchmove', function(ev){
+  if(!sdrag.on) return;
+  var dy = ev.touches[0].clientY - sdrag.y0;
+  if(dy <= 0 || sdrag.el.scrollTop > 0){
+    /* 위로 미는 건 화면 안 스크롤 → 손짓 그만 */
+    if(sdrag.dy > 0){ sdrag.el.style.transition = ''; sdrag.el.style.transform = ''; }
+    if(dy < -6 || sdrag.el.scrollTop > 0) sdrag.on = false;
+    sdrag.dy = 0;
+    return;
+  }
+  if(ev.cancelable) ev.preventDefault();
+  sdrag.dy = dy;
+  var nowT = Date.now();
+  sdrag.pts.push([nowT, dy]);
+  while(sdrag.pts.length > 2 && nowT - sdrag.pts[0][0] > 120) sdrag.pts.shift();   /* 마지막 0.12초만 */
+  sdrag.el.style.transition = 'none';
+  sdrag.el.style.transform = 'translateY(' + dy + 'px)';
+}, {passive:false});
+function sheetDragEnd(){
+  if(!sdrag.on) return;
+  sdrag.on = false;
+  var el = sdrag.el, dy = sdrag.dy;
+  /* 손을 떼기 직전 0.12초 동안의 속도 (px/ms) — 휙 내리면 짧아도 닫힘 */
+  var p0 = sdrag.pts[0] || [sdrag.t0, 0];
+  var speed = (dy - p0[1]) / Math.max(1, Date.now() - p0[0]);
+  el.style.transition = 'transform .2s ease';
+  if(dy > 110 || (dy > 40 && speed > 0.6)){
+    el.style.transform = 'translateY(105%)';
+    setTimeout(function(){
+      closeTopSheet();
+      el.style.transition = ''; el.style.transform = '';
+    }, 190);
+  } else {
+    el.style.transform = '';
+    setTimeout(function(){ el.style.transition = ''; }, 220);
+  }
+  sdrag.dy = 0;
+}
+document.addEventListener('touchend', sheetDragEnd, {passive:true});
+document.addEventListener('touchcancel', sheetDragEnd, {passive:true});
 
 function confirmDeleteRecord(rid, backItemId){
   askConfirm('기록 삭제', '이 관리 기록을 삭제할까요?\n항목의 마지막 관리일도 함께 되돌아가요.', '삭제', function(){
