@@ -474,15 +474,22 @@ var CAT_COLOR = {};
 CATS.forEach(function(c){ CAT_COLOR[c.key] = c.color; });
 
 var PRESETS = [
-  {name:'보톡스',        cat:'피부과',  cycleV:4,  cycleU:'m', shop:'', memo:'권장 16주(4개월)'},
-  {name:'레이저·리프팅', cat:'피부과',  cycleV:6,  cycleU:'w', shop:'', memo:'권장 4~8주'},
-  {name:'스킨부스터',    cat:'피부과',  cycleV:4,  cycleU:'w', shop:'', memo:'권장 4주'},
-  {name:'속눈썹 펌',     cat:'속눈썹', cycleV:6,  cycleU:'w', shop:'', memo:'권장 6주'},
-  {name:'젤네일',        cat:'네일·패디', cycleV:4, cycleU:'w', shop:'', memo:'권장 4주'},
-  {name:'패디큐어',      cat:'네일·패디', cycleV:6, cycleU:'w', shop:'', memo:'권장 6주'},
-  {name:'헤어 펌/염색',  cat:'헤어',   cycleV:12, cycleU:'w', shop:'', memo:'권장 12주'},
-  {name:'헤어 커트',     cat:'헤어',   cycleV:8,  cycleU:'w', shop:'', memo:'권장 8주'}
+  {name:'보톡스',        cat:'피부과',  cycleV:4,  cycleU:'m', shop:'', memo:''},
+  {name:'레이저·리프팅', cat:'피부과',  cycleV:6,  cycleU:'w', shop:'', memo:''},
+  {name:'스킨부스터',    cat:'피부과',  cycleV:4,  cycleU:'w', shop:'', memo:''},
+  {name:'속눈썹 펌',     cat:'속눈썹', cycleV:6,  cycleU:'w', shop:'', memo:''},
+  {name:'젤네일',        cat:'네일·패디', cycleV:4, cycleU:'w', shop:'', memo:''},
+  {name:'패디큐어',      cat:'네일·패디', cycleV:6, cycleU:'w', shop:'', memo:''},
+  {name:'헤어 펌/염색',  cat:'헤어',   cycleV:12, cycleU:'w', shop:'', memo:''},
+  {name:'헤어 커트',     cat:'헤어',   cycleV:8,  cycleU:'w', shop:'', memo:''}
 ];
+
+/* 예전 기본 프리셋이 남긴 중복 권장 메모 — 저장된 기록에서는 이 6문구와 똑같을 때만 비운다 */
+var LEGACY_PRESET_MEMOS = ['권장 16주(4개월)', '권장 4~8주', '권장 4주', '권장 6주', '권장 12주', '권장 8주'];
+function cleanItemMemo(m){
+  var memo = String(m==null?'':m);
+  return LEGACY_PRESET_MEMOS.indexOf(memo) >= 0 ? '' : memo;
+}
 
 var LS_KEY = 'beautyCareNote.v1';
 var UNDO_KEY = LS_KEY + '-undo';
@@ -589,7 +596,7 @@ function normalize(raw){
         cycleV: (cv && cv > 0) ? cv : 4,
         cycleU: (it.cycleU==='d'||it.cycleU==='w'||it.cycleU==='m') ? it.cycleU : 'w',
         shop: String(it.shop==null?'':it.shop),
-        memo: String(it.memo==null?'':it.memo),
+        memo: cleanItemMemo(it.memo),
         createdAt: isDateStr(it.createdAt) ? it.createdAt : todayStr()
       });
       byId[id] = 1; nameToId[name] = id;
@@ -660,6 +667,8 @@ function load(){
     var raw = localStorage.getItem(LS_KEY);
     if(!raw){ state = defaultState(); save(); return; }
     state = normalize(JSON.parse(raw));
+    /* 예전 프리셋 메모 정리 등으로 내용이 달라졌으면 이 기기 저장본도 바로 맞춰 둔다(클라우드는 건드리지 않음) */
+    if(JSON.stringify(state) !== raw) saveLocal();
   }catch(e){
     storeOK = false;
     $('storageWarn').classList.add('on');
