@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="꽃단장">
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="favicon.ico?v=1" sizes="any">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<link rel="icon" href="favicon.ico?v=2" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <title>꽃단장 🌸 · 뷰티 케어 캘린더</title>
 <style>
 :root{
@@ -57,6 +57,20 @@ button{font-family:inherit}
 .brand p{margin:3px 0 0;font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:-.01em;line-height:1.42}
 .icon-btn{width:40px;height:40px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.94);
   color:var(--ink-2);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;-webkit-appearance:none}
+
+/* ── ☁️ 실시간 가족 동기화 ── */
+.top-right{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.cloud-dot{width:28px;height:28px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;line-height:1;background:#EAF6F2;border:1px solid #CDE8DE}
+.cloud-dot.busy{background:#FFF1E6;border-color:#F6DBC9}
+.cloud-dot.bad{background:#FDEBEE;border-color:#F3CEC2}
+.sync-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;
+  background:#EAF6F2;color:#3E8E6D;border:1px solid #CDE8DE;font-size:11.5px;font-weight:800}
+.sync-badge.busy{background:#FFF1E6;color:#96543A;border-color:#F6DBC9}
+.sync-badge.bad{background:#FDEBEE;color:#B3264C;border-color:#F3CEC2}
+.sync-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;font-weight:800;
+  color:var(--rose-d);word-break:break-all}
+.sync-line{font-size:11.5px;color:var(--muted);font-weight:600;line-height:1.6;margin-top:6px}
 
 /* ── headings ── */
 .sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:22px 2px 10px}
@@ -227,7 +241,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
         <p id="topSummary">관리 기록을 챙기는 뷰티 캘린더</p>
       </div>
     </div>
-    <button class="icon-btn" id="btnSettings" aria-label="설정">⚙️</button>
+    <div class="top-right"><span class="cloud-dot hidden" id="cloudDot" aria-hidden="true">☁️</span><button class="icon-btn" id="btnSettings" aria-label="설정">⚙️</button></div>
   </div>
 
   <div class="warnbar" id="storageWarn">⚠️ 이 화면에서는 자동 저장이 막혀 있어요. 공유 → <b>Safari로 열기</b>로 다시 열어 주세요. (기록·화면은 동작하지만 저장이 안 됩니다)</div>
@@ -283,6 +297,10 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
       </div>
     </div>
     <div class="set-card">
+      <div style="font-size:13px;font-weight:800">☁️ 실시간 공유 (가족 동기화)</div>
+      <div id="syncBox" style="margin-top:10px"></div>
+    </div>
+    <div class="set-card">
       <div style="font-size:13px;font-weight:800">백업 불러오기</div>
       <div class="set-note">파일을 선택하거나 백업 JSON을 붙여넣으세요. 불러오기 전에 확인창이 뜨고, 직전 상태는 한 번 되돌릴 수 있어요.</div>
       <div class="set-row" style="margin-top:11px">
@@ -297,7 +315,7 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
       <div class="set-note">모든 항목과 기록을 지웁니다. 두 번 눌러야 실행돼요.</div>
       <button class="set-btn danger" id="btnReset" style="width:100%;margin-top:10px">🗑 전체 초기화</button>
     </div>
-    <div class="set-note" style="text-align:center;margin:18px 0 6px">꽃단장 🌸 · 기록은 이 기기에만 저장돼요</div>
+    <div class="set-note" id="setFoot" style="text-align:center;margin:18px 0 6px">꽃단장 🌸 · 기록은 이 기기에만 저장돼요</div>
   </section>
 </div>
 
@@ -423,6 +441,7 @@ var editingItemId = null;
 var editingRate = 0;
 var detailItemId = null;
 var confirmCb = null;
+var confirmCancel = null;
 var resetArmed = false;
 var scrollLockY = 0;
 
@@ -531,10 +550,16 @@ function normalize(raw){
   out.records.sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
   return out;
 }
+function saveLocal(){
+  if(!storeOK) return false;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); return true; }
+  catch(e){ storeOK = false; $('storageWarn').classList.add('on'); return false; }
+}
+/* 저장 = 이 기기(localStorage) 먼저, 성공하면 클라우드로 디바운스 반영 */
 function save(){
-  if(!storeOK) return;
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-  catch(e){ storeOK = false; $('storageWarn').classList.add('on'); }
+  var ok = saveLocal();
+  if(ok) cloudPush();
+  return ok;
 }
 function load(){
   try{
@@ -597,11 +622,12 @@ function closeSheets(){
   });
   window.scrollTo(0, scrollLockY);
 }
-function askConfirm(title, body, yesLabel, cb){
+function askConfirm(title, body, yesLabel, cb, cancelCb){
   $('cfTitle').textContent = title;
   $('cfBody').textContent = body;
   $('cfYes').textContent = yesLabel || '확인';
-  confirmCb = cb;
+  confirmCb = cb || null;
+  confirmCancel = cancelCb || null;
   openSheet('sheetConfirm');
 }
 
@@ -833,6 +859,9 @@ function renderSet(){
     }
   }catch(e){ info = '자동 저장 상태를 확인할 수 없어요'; }
   $('setStorage').textContent = info;
+  renderSyncBox();
+  var foot = $('setFoot');
+  if(foot) foot.textContent = (sync.status === 'on') ? '꽃단장 🌸 · 가족 코드로 실시간 공유 중' : '꽃단장 🌸 · 기록은 이 기기에만 저장돼요';
   if(undoSnapshot){
     $('undoBar').classList.add('on');
     $('undoText').textContent = '불러오기 직전 상태를 잠깐 보관 중이에요.';
@@ -1113,6 +1142,379 @@ function renderAll(){
   if(!$('viewSet').classList.contains('hidden')) renderSet();
 }
 
+/* ═══════════ ☁️ 실시간 가족 동기화 (Firebase Firestore) ═══════════
+   · 인터넷·CDN이 없거나 실패해도 이 앱은 localStorage만으로 100% 그대로 동작합니다.
+   · 가족 코드와 기기 ID는 state와 분리된 별도 키(SYNC_KEY)에만 저장합니다.
+   · 보안 규칙에 delete 권한이 없으므로 삭제 요청은 절대 보내지 않습니다. */
+var CLOUD_CFG = {
+  apiKey: 'AIzaSyCmaa4eZlqjCr9epyI0Gbz25DEe8rul-YA',
+  authDomain: 'baby-meal-6a8f6.firebaseapp.com',
+  projectId: 'baby-meal-6a8f6',
+  storageBucket: 'baby-meal-6a8f6.firebasestorage.app',
+  messagingSenderId: '150441260932',
+  appId: '1:150441260932:web:38b02450f51c53997c0fd1'
+};
+var FB_VER = '10.14.1';
+var SYNC_KEY = LS_KEY + '-sync';
+var SYNC_SUFFIX = '_beauty';
+var sync = {code:'', deviceId:'', status:'off', err:'', db:null, doc:null, unsub:null, pushTimer:null, lastPush:null, lastPull:null, pendingRef:null};
+var fbSdk = {loading:false, cbs:[]};
+
+function syncKey(){ return sync.status + '|' + sync.code + '|' + sync.err; }
+function newDeviceId(){
+  try{ if(window.crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+  return 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+}
+function readSyncMeta(){
+  var out = {code:'', deviceId:''};
+  try{
+    var raw = localStorage.getItem(SYNC_KEY);
+    if(raw){
+      var o = JSON.parse(raw);
+      if(o && typeof o === 'object'){ out.code = String(o.code||''); out.deviceId = String(o.deviceId||''); }
+    }
+  }catch(e){}
+  if(!out.deviceId) out.deviceId = newDeviceId();
+  return out;
+}
+function writeSyncMeta(code){
+  try{ localStorage.setItem(SYNC_KEY, JSON.stringify({code: code||'', deviceId: sync.deviceId, at: new Date().toISOString()})); }catch(e){}
+}
+function cleanCode(v){
+  return String(v==null?'':v).trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,64);
+}
+function randomCode(){
+  var A = 'abcdefghjkmnpqrstuvwxyz23456789', s = 'fam';
+  for(var i=0;i<9;i++) s += A.charAt(Math.floor(Math.random()*A.length));
+  return s;
+}
+function fmtClock(iso){
+  try{
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    return (d.getMonth()+1) + '/' + d.getDate() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+  }catch(e){ return ''; }
+}
+function lastSyncText(){
+  var bits = [];
+  if(sync.lastPush) bits.push('이 폰 → 클라우드 ' + fmtClock(sync.lastPush));
+  if(sync.lastPull) bits.push('클라우드 → 이 폰 ' + fmtClock(sync.lastPull));
+  return bits.length ? bits.join(' · ') : '이번에 연결한 뒤로는 아직 주고받은 내용이 없어요';
+}
+function syncSummary(s){
+  if(!s) return '내용 없음';
+  return '항목 ' + ((s.items||[]).length) + '개 · 기록 ' + ((s.records||[]).length) + '건';
+}
+function syncSig(s){
+  try{ return JSON.stringify({i:s.items, r:s.records}); }catch(e){ return ''; }
+}
+
+/* ── Firebase SDK: 필요한 순간에만, 실패해도 앱은 그대로 ── */
+function fbReady(){ return !!(window.firebase && window.firebase.firestore && window.firebase.apps); }
+function loadFirebase(cb){
+  if(fbReady()){ try{ cb(null); }catch(e){} return; }
+  fbSdk.cbs.push(cb);
+  if(fbSdk.loading) return;
+  fbSdk.loading = true;
+  var settled = false, timer = null;
+  function finish(err){
+    if(settled) return;
+    settled = true;
+    if(timer) clearTimeout(timer);
+    fbSdk.loading = false;
+    var list = fbSdk.cbs.slice();
+    fbSdk.cbs.length = 0;
+    for(var i=0;i<list.length;i++){ try{ list[i](err||null); }catch(e){} }
+  }
+  function add(src, next){
+    var s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = function(){ next(null); };
+    s.onerror = function(){ next(new Error('불러오지 못했어요')); };
+    document.head.appendChild(s);
+  }
+  timer = setTimeout(function(){ finish(new Error('시간 초과')); }, 10000);
+  add('https://www.gstatic.com/firebasejs/' + FB_VER + '/firebase-app-compat.js', function(e1){
+    if(e1){ finish(e1); return; }
+    add('https://www.gstatic.com/firebasejs/' + FB_VER + '/firebase-firestore-compat.js', function(e2){
+      if(e2){ finish(e2); return; }
+      finish(fbReady() ? null : new Error('SDK를 시작하지 못했어요'));
+    });
+  });
+}
+function cloudDb(){
+  try{
+    if(!fbReady()) return null;
+    if(!firebase.apps.length) firebase.initializeApp(CLOUD_CFG);
+    return firebase.firestore();
+  }catch(e){ return null; }
+}
+function cloudDocRef(db, code){
+  try{ return db.collection('notes').doc(code + SYNC_SUFFIX); }catch(e){ return null; }
+}
+
+/* ── 올리기 ── */
+function doPush(){
+  if(sync.status !== 'on' || !sync.doc) return false;
+  var payload;
+  try{ payload = JSON.stringify(state); }catch(e){ return false; }
+  try{
+    sync.doc.set({
+      payload: payload,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: sync.deviceId
+    }).then(function(){
+      sync.lastPush = new Date().toISOString();
+      paintCloud();
+    }, function(err){
+      sync.err = (err && err.message) ? err.message : '클라우드에 올리지 못했어요';
+      paintCloud();
+    });
+    return true;
+  }catch(e){ return false; }
+}
+function cloudPush(){
+  if(sync.status !== 'on' || !sync.doc) return;
+  clearTimeout(sync.pushTimer);
+  sync.pushTimer = setTimeout(doPush, 300);
+}
+
+/* ── 받기 ── */
+function applyCloudData(data, quiet){
+  if(!data || typeof data !== 'object') return false;
+  var next;
+  try{ next = normalize(data); }catch(e){ return false; }
+  if(syncSig(next) === syncSig(state)) return false;
+  state = next;
+  saveLocal();
+  renderAll();
+  sync.lastPull = new Date().toISOString();
+  if(!quiet) toast('☁️ 다른 기기에서 바뀐 내용을 불러왔어요');
+  return true;
+}
+function cloudSubscribe(){
+  if(!sync.doc) return;
+  if(sync.unsub){ try{ sync.unsub(); }catch(e){} sync.unsub = null; }
+  var first = true;
+  try{
+    sync.unsub = sync.doc.onSnapshot(function(snap){
+      if(!snap) return;
+      if(snap.metadata && snap.metadata.hasPendingWrites) return;
+      if(!snap.exists) return;
+      var d = snap.data() || {};
+      if(d.updatedBy === sync.deviceId){ paintCloud(); first = false; return; }
+      var data = null;
+      try{ data = JSON.parse(String(d.payload||'null')); }catch(e){}
+      applyCloudData(data, first);
+      first = false;
+      paintCloud();
+    }, function(err){
+      sync.status = 'error';
+      sync.err = (err && err.message) ? err.message : '연결이 끊겼어요';
+      paintCloud();
+    });
+  }catch(e){
+    sync.status = 'error'; sync.err = '실시간 연결을 시작하지 못했어요'; paintCloud();
+  }
+}
+
+/* ── 연결 / 해제 ── */
+function finishConnect(silent, msg){
+  sync.status = 'on'; sync.err = '';
+  writeSyncMeta(sync.code);
+  cloudSubscribe();
+  paintCloud();
+  if(msg && !silent) toast('☁️ ' + msg);
+}
+function connectCloud(rawCode, silent){
+  var code = cleanCode(rawCode);
+  if(code.length < 8){
+    if(!silent) toast('가족 코드는 영문·숫자로 8자 이상이어야 해요');
+    return;
+  }
+  sync.code = code;
+  sync.status = 'connecting'; sync.err = '';
+  paintCloud();
+  loadFirebase(function(err){
+    if(err){
+      sync.status = 'off'; sync.err = '클라우드에 연결하지 못했어요 (오프라인?)';
+      paintCloud();
+      if(!silent) toast('지금은 클라우드에 연결하지 못했어요. 기록은 이 폰에 그대로 있어요');
+      return;
+    }
+    var db = cloudDb();
+    if(!db){
+      sync.status = 'off'; sync.err = '클라우드를 시작하지 못했어요'; paintCloud();
+      if(!silent) toast('클라우드를 시작하지 못했어요. 기록은 이 폰에 그대로 있어요');
+      return;
+    }
+    sync.db = db;
+    var ref = cloudDocRef(db, code);
+    if(!ref){ sync.status = 'off'; sync.err = '코드를 쓸 수 없어요'; paintCloud(); return; }
+    ref.get().then(function(snap){
+      if(!snap.exists){
+        return ref.set({
+          payload: JSON.stringify(state),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedBy: sync.deviceId
+        }).then(function(){
+          sync.doc = ref;
+          sync.lastPush = new Date().toISOString();
+          finishConnect(silent, '새 가족 공유를 시작했어요');
+        });
+      }
+      var data = null;
+      try{ data = JSON.parse(String((snap.data()||{}).payload||'null')); }catch(e){}
+      if(silent){
+        sync.doc = ref;
+        finishConnect(true, null);
+        return;
+      }
+      askCloudMerge(ref, syncSummary(data ? normalize(data) : null), syncSummary(state));
+    }).catch(function(err){
+      var c = (err && err.code) ? String(err.code) : '';
+      sync.status = 'off';
+      sync.err = (c.indexOf('permission-denied') >= 0) ? '이 코드로는 저장할 수 없어요 (보안 규칙)' : ((err && err.message) || '클라우드에 연결하지 못했어요');
+      paintCloud();
+      if(!silent) toast('연결하지 못했어요: ' + sync.err);
+    });
+  });
+}
+function askCloudMerge(ref, cloudTxt, mineTxt){
+  sync.pendingRef = ref;
+  askConfirm('☁️ 가족 공유 연결',
+    '클라우드에 이미 저장된 기록이 있어요.\n\n☁️ 클라우드 · ' + cloudTxt + '\n📱 이 폰 · ' + mineTxt + '\n\n클라우드 기록을 이 폰으로 불러올까요?',
+    '☁️ 클라우드 불러오기',
+    function(){ mergeTakeCloud(); },
+    function(){
+      /* 취소 = 클라우드를 덮어쓰지 않고, 이 폰 기록을 올릴지 한 번 더 묻는다 */
+      setTimeout(function(){
+        askConfirm('📱 이 폰 기록 올리기',
+          '그럼 이 폰 기록을 클라우드에 올릴까요?\n\n이 폰 · ' + mineTxt + '\n\n올리면 클라우드에 있던 기록(' + cloudTxt + ')이 이 폰 기록으로 바뀌어요.',
+          '이 폰 기록 올리기',
+          function(){ mergeTakePhone(); },
+          function(){ cancelConnect(); });
+      }, 80);
+    });
+}
+function mergeTakeCloud(){
+  var ref = sync.pendingRef;
+  if(!ref){ cancelConnect(); return; }
+  sync.status = 'connecting'; sync.err = ''; paintCloud();
+  ref.get().then(function(snap){
+    if(!snap.exists){ mergeTakePhone(); return; }
+    var data = null;
+    try{ data = JSON.parse(String((snap.data()||{}).payload||'null')); }catch(e){}
+    var ok = applyCloudData(data, true);
+    sync.doc = ref; sync.pendingRef = null;
+    finishConnect(false, ok ? '클라우드 기록을 이 폰에 불러왔어요' : '클라우드 기록이 이 폰과 같았어요');
+    renderSet();
+  }).catch(function(err){
+    sync.status = 'off'; sync.err = (err && err.message) ? err.message : '클라우드 기록을 읽지 못했어요';
+    paintCloud();
+    toast('클라우드 기록을 읽지 못했어요. 잠시 뒤 다시 시도해 주세요');
+  });
+}
+function mergeTakePhone(){
+  var ref = sync.pendingRef;
+  if(!ref){ cancelConnect(); return; }
+  sync.status = 'connecting'; sync.err = ''; paintCloud();
+  try{
+    ref.set({
+      payload: JSON.stringify(state),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: sync.deviceId
+    }).then(function(){
+      sync.doc = ref; sync.pendingRef = null;
+      sync.lastPush = new Date().toISOString();
+      finishConnect(false, '이 폰 기록을 클라우드에 올렸어요');
+      renderSet();
+    }, function(err){
+      sync.status = 'off'; sync.err = (err && err.message) ? err.message : '클라우드에 올리지 못했어요';
+      paintCloud();
+      toast('클라우드에 올리지 못했어요. 이 폰 기록은 그대로 있어요');
+    });
+  }catch(e){
+    sync.status = 'off'; sync.err = '클라우드에 올리지 못했어요'; paintCloud();
+  }
+}
+function cancelConnect(){
+  sync.pendingRef = null; sync.doc = null; sync.code = ''; sync.status = 'off'; sync.err = '';
+  writeSyncMeta('');
+  paintCloud();
+  toast('연결을 그만뒀어요 · 이 폰 기록은 그대로예요');
+}
+function disconnectCloud(){
+  if(sync.unsub){ try{ sync.unsub(); }catch(e){} sync.unsub = null; }
+  clearTimeout(sync.pushTimer);
+  sync.status = 'off'; sync.code = ''; sync.err = ''; sync.doc = null; sync.db = null; sync.pendingRef = null;
+  sync.lastPush = null; sync.lastPull = null;
+  writeSyncMeta('');
+  paintCloud();
+  toast('☁️ 연결을 해제했어요 · 이 폰 기록은 그대로 있어요');
+}
+
+/* ── 화면(배지·설정 카드) ── */
+function syncBoxHtml(){
+  if(sync.status === 'on'){
+    return '<div class="sync-badge">☁️ 실시간 연결됨</div>' +
+      '<div class="sync-line">가족 코드 <span class="sync-code">' + esc(sync.code) + '</span></div>' +
+      '<div class="sync-line" id="syncLast">' + esc(lastSyncText()) + '</div>' +
+      '<div class="sync-line">이 폰에서 고친 내용이 바로 클라우드에 올라가고, 같은 코드를 넣은 다른 기기에도 자동으로 나타나요.</div>' +
+      '<div class="set-row" style="margin-top:11px">' +
+        '<button class="set-btn" data-sync="push">지금 올리기</button>' +
+        '<button class="set-btn danger" data-sync="off">연결 해제</button>' +
+      '</div>';
+  }
+  if(sync.status === 'connecting'){
+    return '<div class="sync-badge busy">☁️ 연결하는 중…</div>' +
+      (sync.code ? '<div class="sync-line">코드 <span class="sync-code">' + esc(sync.code) + '</span></div>' : '') +
+      '<div class="sync-line">잠시만 기다려 주세요.</div>';
+  }
+  var head = (sync.status === 'error')
+    ? '<div class="sync-badge bad">☁️ 연결이 끊겼어요</div>'
+    : '<div class="sync-badge" style="background:#F7F1F4;color:#8E7B86;border-color:#EBDDE4">📍 이 폰에만 저장 중</div>';
+  var err = (sync.err)
+    ? '<div class="sync-line" style="color:#B3264C">' + esc(sync.err) + '</div>'
+    : '<div class="sync-line">같은 가족 코드를 넣은 기기끼리 기록이 실시간으로 맞춰져요. 비워 두면 지금처럼 이 폰에만 저장돼요.</div>';
+  return head +
+    '<label class="f-lbl" style="margin-top:10px">가족 공유 코드</label>' +
+    '<input class="f-in" id="fFamilyCode" type="text" maxlength="64" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" value="' + esc(sync.code||'') + '" placeholder="영문·숫자 8자 이상">' + err +
+    '<div class="set-row" style="margin-top:11px">' +
+      '<button class="set-btn primary" data-sync="connect">연결하기</button>' +
+      '<button class="set-btn" data-sync="random">랜덤 코드</button>' +
+    '</div>';
+}
+function renderSyncBox(){
+  var box = $('syncBox');
+  if(!box) return;
+  if(box.getAttribute('data-key') !== syncKey()){
+    box.setAttribute('data-key', syncKey());
+    box.innerHTML = syncBoxHtml();
+  }
+  var last = $('syncLast');
+  if(last) last.textContent = lastSyncText();
+}
+function paintCloud(){
+  var dot = $('cloudDot');
+  if(dot){
+    dot.classList.toggle('hidden', sync.status === 'off');
+    dot.classList.toggle('busy', sync.status === 'connecting');
+    dot.classList.toggle('bad', sync.status === 'error');
+    dot.setAttribute('title', sync.status === 'on' ? ('☁️ 가족 코드 ' + sync.code + ' · 실시간 공유 중') : (sync.status === 'connecting' ? '☁️ 클라우드에 연결하는 중' : '☁️ 클라우드 연결에 문제가 있어요'));
+  }
+  renderSyncBox();
+  var foot = $('setFoot');
+  if(foot) foot.textContent = (sync.status === 'on') ? '꽃단장 🌸 · 가족 코드로 실시간 공유 중' : '꽃단장 🌸 · 기록은 이 기기에만 저장돼요';
+}
+function initCloud(){
+  var meta = readSyncMeta();
+  sync.deviceId = meta.deviceId;
+  sync.code = cleanCode(meta.code);
+  paintCloud();
+  if(sync.code.length >= 8) connectCloud(sync.code, true);
+}
+
 /* ─────────── 이벤트 ─────────── */
 function bind(){
   document.querySelectorAll('.tab').forEach(function(b){
@@ -1216,16 +1618,38 @@ function bind(){
   });
 
   /* 확인창 */
-  $('cfNo').addEventListener('click', function(){ confirmCb = null; closeSheets(); });
+  $('cfNo').addEventListener('click', function(){
+    var cancel = confirmCancel;
+    confirmCb = null; confirmCancel = null;
+    closeSheets();
+    if(cancel) setTimeout(cancel, 60);
+  });
   $('cfYes').addEventListener('click', function(){
     var cb = confirmCb;
-    confirmCb = null;
+    confirmCb = null; confirmCancel = null;
     closeSheets();
     if(cb) cb();
   });
   $('back').addEventListener('click', closeSheets);
 
   /* 설정 */
+  $('syncBox').addEventListener('click', function(e){
+    var b = e.target.closest('[data-sync]');
+    if(!b) return;
+    var act = b.getAttribute('data-sync');
+    if(act === 'connect'){ var inp = $('fFamilyCode'); connectCloud(inp ? inp.value : sync.code); }
+    else if(act === 'random'){
+      var rc = randomCode();
+      var i2 = $('fFamilyCode');
+      if(i2) i2.value = rc;
+      toast('가족 코드를 만들었어요: ' + rc + ' · 다른 기기에 똑같이 넣어 주세요');
+    }
+    else if(act === 'off'){ disconnectCloud(); }
+    else if(act === 'push'){
+      if(!doPush()){ toast('먼저 가족 코드로 연결해 주세요'); return; }
+      toast('☁️ 클라우드에 올리는 중…');
+    }
+  });
   $('btnBackup').addEventListener('click', download);
   $('btnCopy').addEventListener('click', copyBackup);
   $('btnLoadFile').addEventListener('click', function(){ $('fileInput').click(); });
@@ -1291,6 +1715,7 @@ function init(){
   bind();
   renderAll();
   switchTab('home');
+  initCloud();
 }
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', init);
