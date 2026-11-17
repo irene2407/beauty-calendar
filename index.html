@@ -2059,7 +2059,7 @@ function bind(){
   /* 상세 시트의 [수정]/[삭제] (예전에는 리스너가 없어 반응이 없었음) */
   $('dtTimeline').addEventListener('click', function(e){
     var ed = e.target.closest('[data-redit]');
-    if(ed){ openRecordSheet(null, ed.dataset.redit, detailItemId); return; }
+    if(ed){ closeSheets(); openRecordSheet(null, ed.dataset.redit, detailItemId); return; }
     var del = e.target.closest('[data-rdel]');
     if(del) confirmDeleteRecord(del.dataset.rdel, detailItemId);
   });
