@@ -2227,6 +2227,23 @@ function renderAll(){
   if(!$('viewCal').classList.contains('hidden')) renderCal();
   if(!$('viewStat').classList.contains('hidden')) renderStat();
   if(!$('viewSet').classList.contains('hidden')) renderSet();
+  refreshOpenDetail();
+}
+/* 열려 있는 상세 화면도 새 데이터로 다시 그림
+   (되돌리기·가족 공유로 들어온 변경·자정 넘김 등 — 보던 스크롤 위치는 그대로) */
+function refreshOpenDetail(){
+  var sh = $('sheetDetail');
+  if(!sh.classList.contains('on') || !detailItemId) return;
+  if(!itemById(detailItemId)){
+    /* 보던 항목이 지워졌으면 상세 화면만 닫음 */
+    sh.classList.remove('on');
+    detailItemId = null;
+    if(!document.querySelector('.sheet.on')) closeSheets();
+    return;
+  }
+  var y = sh.scrollTop;
+  openDetail(detailItemId);
+  sh.scrollTop = y;
 }
 
 /* ═══════════ ☁️ 실시간 가족 동기화 (Firebase Firestore) ═══════════
@@ -3001,9 +3018,9 @@ function bind(){
   function detailPlanClick(e){
     var iid = detailItemId;
     var pd = e.target.closest('[data-pdone]');
-    if(pd){ e.stopPropagation(); planDone(pd.dataset.pdone); if(iid) openDetail(iid); return true; }
+    if(pd){ e.stopPropagation(); planDone(pd.dataset.pdone); return true; }
     var pc = e.target.closest('[data-pcancel]');
-    if(pc){ e.stopPropagation(); deleteRecordUndoable(pc.dataset.pcancel, '예약을 지웠어요'); if(iid) openDetail(iid); return true; }
+    if(pc){ e.stopPropagation(); deleteRecordUndoable(pc.dataset.pcancel, '예약을 지웠어요'); return true; }
     var pe = e.target.closest('[data-pedit]');
     if(pe){ e.stopPropagation(); closeSheets(); openRecordSheet(null, pe.dataset.pedit, iid); return true; }
     var bk = e.target.closest('[data-book]');
