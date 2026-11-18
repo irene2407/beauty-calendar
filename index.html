@@ -307,6 +307,8 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
 .check-box .row{display:flex;gap:6px}
 .check-box button{flex:1;padding:9px 4px;border-radius:11px;border:1px solid #E6D6BE;background:#fff;color:var(--ink-2);
   font-size:13px;font-weight:800;cursor:pointer;-webkit-appearance:none;font-family:inherit;white-space:nowrap}
+.cost-hint{margin-top:6px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.cost-hint.warn{color:#9A4A1E}
 .check-box.today{background:#EEF1F7;border-color:#DCE2EE}
 .check-box.today p{color:#4A5876}
 .check-box button.yes{background:linear-gradient(135deg,var(--rose),var(--rose-d));border-color:transparent;color:#fff}
@@ -425,6 +427,11 @@ input, select, textarea, .f-in, select.f-in, textarea.paste{font-size:16px}
         <button class="cal-nav" id="yrNext" aria-label="다음 해">›</button>
       </div>
     </div>
+    <div class="card empty-box hidden" id="statEmpty" style="padding:26px 18px">
+      아직 비용을 적은 기록이 없어요 💸<br>
+      관리 기록을 남길 때 <b>비용</b>을 넣으면<br>달마다·항목마다 쓴 돈이 여기 모여요.
+    </div>
+    <div id="statBody">
     <div class="kpis" id="statKpis"></div>
     <div class="sec-head"><span class="sec-title">월별 꾸밈비</span><span class="sec-sub" id="mSub">막대를 누르면 그 달 내역</span></div>
     <div class="card">
@@ -436,7 +443,8 @@ input, select, textarea, .f-in, select.f-in, textarea.paste{font-size:16px}
     <div class="card" id="catBreak"></div>
     <div class="sec-head"><span class="sec-title">항목별</span><span class="sec-sub">많이 쓴 순</span></div>
     <div class="card" id="itemBreak"></div>
-    <div class="set-note" style="text-align:center;margin:14px 0 4px">비용을 적은 기록만 더해요 · 오늘 이후 '예정' 기록은 빼고 계산해요</div>
+    <div class="set-note" style="text-align:center;margin:14px 0 4px">비용을 적은 기록만 더해요 · 예약(아직 안 받은 관리)은 빼고 계산해요</div>
+    </div>
   </section>
 
   <!-- ═══════════ 달력 ═══════════ -->
@@ -526,7 +534,8 @@ input, select, textarea, .f-in, select.f-in, textarea.paste{font-size:16px}
   <label class="f-lbl">샵 (선택)</label>
   <input class="f-in" type="text" id="recShop" placeholder="예: 앤드류다 헤어">
   <label class="f-lbl">비용 (선택)</label>
-  <input class="f-in" type="number" id="recCost" min="0" step="100" inputmode="numeric" placeholder="예: 45000">
+  <input class="f-in" type="text" id="recCost" inputmode="numeric" autocomplete="off" maxlength="13" placeholder="예: 45,000">
+  <div class="cost-hint hidden" id="recCostHint"></div>
   <div id="recRateWrap"><label class="f-lbl">만족도 (선택)</label>
   <div class="rate-row" id="recRate"></div></div>
   <label class="f-lbl">메모 (선택)</label>
@@ -1413,6 +1422,12 @@ function renderStat(){
   var nowY = +today.slice(0, 4), nowM = +today.slice(5, 7) - 1;
   if(!statY) statY = nowY;
   var paid = paidRecords();
+  /* 비용 기록이 하나도 없으면 0원투성이 대신 안내 한 장 */
+  var none = paid.length === 0;
+  $('statEmpty').classList.toggle('hidden', !none);
+  $('statBody').classList.toggle('hidden', none);
+  document.querySelector('#viewStat .yr-nav').style.visibility = none ? 'hidden' : '';
+  if(none) return;
   var minY = nowY;
   paid.forEach(function(r){ var y = +r.date.slice(0, 4); if(y < minY) minY = y; });
   if(statY < minY) statY = minY;
@@ -1565,7 +1580,7 @@ function deleteRecordUndoable(rid, msg){
   state.records = state.records.filter(function(r){ return r.id !== rid; });
   save();
   renderAll();
-  showSnack(msg || '기록을 삭제했어요', '↩︎ 되돌리기', function(){
+  undoSnack(msg || '기록을 삭제했어요', function(){
     if(!itemById(rec.itemId)){ toast('항목이 없어 되돌릴 수 없어요'); return; }
     if(!state.records.some(function(r){ return r.id === rec.id; })) state.records.push(rec);
     save(); renderAll();
@@ -1581,7 +1596,7 @@ function deleteItemUndoable(iid){
   state.records = state.records.filter(function(r){ return r.itemId !== iid; });
   save();
   renderAll();
-  showSnack('"' + itCopy.name + '" 항목을 삭제했어요', '↩︎ 되돌리기', function(){
+  undoSnack('"' + itCopy.name + '" 항목을 삭제했어요', function(){
     if(state.items.some(function(x){ return x.name === itCopy.name; })){ toast('같은 이름의 항목이 있어 되돌릴 수 없어요'); return; }
     if(!catExists(itCopy.cat)) itCopy.cat = '기타';
     state.items.push(itCopy);
@@ -1606,7 +1621,21 @@ function planDone(rid){
 
 /* ─────────── 스낵바 (버튼 달린 알림) ─────────── */
 var snackTimer = null, snackFn = null;
+var undoList = [];               /* 되돌리기 알림이 떠 있는 동안 지운 것들 (되돌릴 함수 목록) */
+/* 지운 뒤 되돌리기 알림: 알림이 떠 있는 동안 또 지우면 하나로 합쳐 [모두 되돌리기] */
+function undoSnack(msg, restoreFn){
+  var showing = $('snack').classList.contains('on') && undoList.length > 0;
+  var list = showing ? undoList.concat([restoreFn]) : [restoreFn];
+  var n = list.length;
+  showSnack(n > 1 ? ('연달아 ' + n + '개를 지웠어요') : msg, n > 1 ? '↩︎ 모두 되돌리기' : '↩︎ 되돌리기', function(){
+    /* 지운 순서의 반대로 하나씩 되살림 */
+    for(var i = list.length - 1; i >= 0; i--){ try{ list[i](); }catch(e){} }
+    if(list.length > 1) toast('되돌렸어요 ✓ ' + list.length + '개 모두');
+  }, UNDO_MS);
+  undoList = list;
+}
 function showSnack(msg, btnLabel, fn, ms){
+  undoList = [];                 /* 새 알림이 뜨면 이전 되돌리기는 끝 (undoSnack이 바로 다시 채움) */
   var el = $('snack');
   $('snackText').textContent = msg;
   $('snackBtn').textContent = btnLabel;
@@ -1619,6 +1648,7 @@ function showSnack(msg, btnLabel, fn, ms){
 function hideSnack(){
   $('snack').classList.remove('on');
   snackFn = null;
+  undoList = [];
   if(snackTimer){ clearTimeout(snackTimer); snackTimer = null; }
 }
 
@@ -1754,15 +1784,48 @@ function updatePlanHint(){
   var d = $('recDate').value, today = todayStr();
   var hint = $('recPlanHint');
   var future = isDateStr(d) && d > today;
-  var editingPlan = false;
-  if(editingRecordId) state.records.forEach(function(r){ if(r.id === editingRecordId && r.plan) editingPlan = true; });
+  var editingPlan = false, editingDone = null;
+  if(editingRecordId) state.records.forEach(function(r){
+    if(r.id !== editingRecordId) return;
+    if(r.plan) editingPlan = true; else editingDone = r;
+  });
   var msg = '';
-  if(recMode === 'book' || future) msg = '📅 예약으로 저장돼요 · 날짜가 지나면 받으셨는지 카드에서 물어볼게요';
+  if(future && editingDone) msg = '⚠️ 받은 관리를 미래 날짜로 바꾸면 예약으로 바뀌어요' + (editingDone.rate ? ' · 적어 둔 별점(' + editingDone.rate + '점)은 지워져요' : '');
+  else if(recMode === 'book' || future) msg = '📅 예약으로 저장돼요 · 날짜가 지나면 받으셨는지 카드에서 물어볼게요';
   else if(editingPlan) msg = '✓ 이 날짜에 받은 관리로 기록돼요';
   hint.textContent = msg;
   hint.classList.toggle('hidden', !msg);
+  hint.style.color = (future && editingDone) ? '#9A4A1E' : '';
   $('recRateWrap').classList.toggle('hidden', recMode === 'book' || future);
   $('recDateLbl').textContent = (recMode === 'book' || future) ? '예약한 날' : '관리한 날';
+}
+/* 비용 칸: 숫자만 남겨서 읽기 / 쉼표 넣어 보여 주기 */
+function costDigits(v){ return String(v == null ? '' : v).replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, '').slice(0, 10); }
+function costComma(d){ return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''; }
+/* 입력하는 동안 쉼표 넣기 (커서 위치는 숫자 기준으로 그대로) */
+function formatCostInput(){
+  var el = $('recCost');
+  var before = el.value, caret = el.selectionStart == null ? before.length : el.selectionStart;
+  var digitsLeft = before.slice(0, caret).replace(/[^0-9]/g, '').length;
+  var d = costDigits(before);
+  var formatted = costComma(d);
+  if(formatted !== before){
+    el.value = formatted;
+    var pos = 0, seen = 0;
+    while(pos < formatted.length && seen < digitsLeft){ if(/\d/.test(formatted[pos])) seen++; pos++; }
+    try{ el.setSelectionRange(pos, pos); }catch(e){}
+  }
+  updateCostHint();
+}
+/* 비용 칸: 쉼표가 들어가니 따로 읽어 주지 않고, 100만 원 이상일 때만 한 번 더 확인 */
+function updateCostHint(){
+  var el = $('recCostHint');
+  var d = costDigits($('recCost').value);
+  var n = d ? +d : 0;
+  if(n < 1000000){ el.classList.add('hidden'); el.textContent = ''; el.classList.remove('warn'); return; }
+  el.textContent = '금액이 맞나요? (0 개수 확인)';
+  el.classList.add('warn');
+  el.classList.remove('hidden');
 }
 /* 📅 예약 잡기: 권장일이 아직 안 지났으면 권장일, 아니면 내일로 시작 */
 function openBookSheet(itemId){
@@ -1819,7 +1882,7 @@ function openRecordSheet(dateStr, recordId, fromDetailItemId, mode){
       $('recItem').value = rec.itemId;
       $('recDate').value = rec.date;
       $('recShop').value = rec.shop;
-      $('recCost').value = rec.cost == null ? '' : rec.cost;
+      $('recCost').value = rec.cost == null ? '' : costComma(String(rec.cost));
       editingRate = rec.rate || 0;
       $('recMemo').value = rec.memo;
     }
@@ -1833,6 +1896,7 @@ function openRecordSheet(dateStr, recordId, fromDetailItemId, mode){
   paintRate();
   updateDupNote();
   updatePlanHint();
+  updateCostHint();
   openSheet('sheetRecord');
 }
 function saveRecord(opts){
@@ -1843,9 +1907,8 @@ function saveRecord(opts){
   if(!isDateStr(date)){ toast('관리한 날짜를 확인해 주세요'); return; }
   if(recMode === 'book' && date <= todayStr()){ toast('예약은 내일 이후 날짜로 골라 주세요'); return; }
   var asPlan = date > todayStr();     /* 미래 날짜 = 예약, 오늘·지난 날짜 = 받은 관리 */
-  var costRaw = $('recCost').value.trim();
-  var cost = costRaw === '' ? null : Math.max(0, Math.round(+costRaw));
-  if(costRaw !== '' && (cost == null || isNaN(cost))){ toast('비용은 숫자로 입력해 주세요'); return; }
+  var costRaw = costDigits($('recCost').value);     /* 쉼표·글자 빼고 숫자만 */
+  var cost = costRaw === '' ? null : Math.max(0, +costRaw);
   /* 확인 안 한 예약(지난 예약·오늘 예약)이 있는데 새로 '받은 관리'를 남기면 → 그 예약을 받은 거냐고 물어봄 */
   if(!editingRecordId && !asPlan && !opts.skipPlanCheck){
     var pend = pendingPlanOf(itemId);
@@ -1972,7 +2035,7 @@ function deleteCustomCat(cid){
     if(filter === cat.name) filter = '전체';
     save();
     renderAll();
-    showSnack('"' + catCopy.name + '" 카테고리를 지웠어요', '↩︎ 되돌리기', function(){
+    undoSnack('"' + catCopy.name + '" 카테고리를 지웠어요', function(){
       if(catExists(catCopy.name)){ toast('같은 이름의 카테고리가 있어 되돌릴 수 없어요'); return; }
       state.cats.push(catCopy);
       state.items.forEach(function(it){ if(moved.indexOf(it.id) >= 0 && it.cat === '기타') it.cat = catCopy.name; });
@@ -2995,6 +3058,9 @@ function bind(){
     var cell = e.target.closest('[data-date]');
     if(cell){
       selDate = cell.dataset.date;
+      /* 흐린 '다른 달' 날짜를 누르면 달력도 그 달로 넘어감 */
+      var cy = +selDate.slice(0, 4), cm = +selDate.slice(5, 7) - 1;
+      if(cy !== calY || cm !== calM){ calY = cy; calM = cm; }
       renderCal();
       var host = $('dayList');
       if(host && host.scrollIntoView) host.scrollIntoView({behavior:'smooth', block:'nearest'});
@@ -3043,6 +3109,7 @@ function bind(){
   $('recDate').addEventListener('change', updateDupNote);
   $('recDate').addEventListener('input', updateDupNote);
   $('recDate').addEventListener('change', updatePlanHint);
+  $('recCost').addEventListener('input', formatCostInput);
   $('recDate').addEventListener('input', updatePlanHint);
   $('recCancel').addEventListener('click', closeSheets);
   $('recSave').addEventListener('click', saveRecord);
