@@ -2,9 +2,9 @@
    · 화면(index.html): 인터넷이 되면 항상 최신본을 받아오고(네트워크 우선), 안 되면 저장해 둔 사본을 보여 줌
    · 아이콘 등: 저장해 둔 사본을 먼저 사용
    · 기록 데이터는 여기서 다루지 않음 (폰 저장공간 + 가족 공유 클라우드에 그대로) */
-var CACHE = 'kkotdanjang-v1';
-var CORE = ['./', './index.html', './manifest.webmanifest', './favicon.ico',
-  './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
+var CACHE = 'kkotdanjang-v2';
+var CORE = ['./', './index.html', './manifest.webmanifest?v=4', './favicon.ico?v=4',
+  './apple-touch-icon.png?v=4', './icon-192.png?v=4', './icon-512.png?v=4'];
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(CORE); }).then(function(){ return self.skipWaiting(); }));
