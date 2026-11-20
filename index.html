@@ -341,6 +341,8 @@ textarea.paste{width:100%;min-height:84px;border:1px solid var(--line);border-ra
 .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .swatch{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;-webkit-appearance:none;padding:0}
 .swatch.on{box-shadow:0 0 0 2px var(--ink-2)}
+.cat-row.open{border-bottom:none}
+.cat-palette{margin:0 0 10px;padding:12px;border-radius:14px;background:#FFFCF8;border:1px solid var(--line)}
 .newcat{margin-top:8px;padding:10px 12px;border:1px dashed #E3CFB3;border-radius:12px;background:#FFFCF8}
 
 /* ── 💸 꾸밈비 통계 ── */
@@ -640,26 +642,76 @@ var CAT_COLOR = {};               /* 기본 5개 색 (사용자 카테고리는 
 CATS.forEach(function(c){ CAT_COLOR[c.key] = c.color; });
 /* 사용자 카테고리 색 후보 — 기본 5색과 겹치지 않는 차분한 색 */
 var CUSTOM_COLORS = ['#D98BB5','#6FA8DC','#C9A227','#7FB069','#E07A5F','#8D6E63','#4DB6AC','#BA68C8'];
+/* 색 고르기 팔레트: 기본 5색 + 추가 색 */
+var COLOR_CHOICES = ['#E08B95','#D98BB5','#BA68C8','#9B7EDE','#6FA8DC','#4DB6AC','#5FB89A','#7FB069','#C9A227','#E8913F','#E07A5F','#8D6E63','#8E9BB0'];
+/* 기본 카테고리 색을 바꾸면 state.cats에 {id:'b:이름', name, color, base:true}로 저장 (가족 공유로 함께 맞춰짐) */
+function baseEntry(name){
+  var hit = null;
+  ((state && state.cats) || []).forEach(function(c){ if(c.base && c.name === name) hit = c; });
+  return hit;
+}
+function baseColorOverride(name){ var e = baseEntry(name); return (e && e.color) || null; }
+/* 화면에 보이는 카테고리 이름 (기본 카테고리는 바꾼 이름이 있으면 그 이름) */
+function catLabel(key){
+  if(CAT_COLOR[key]){ var e = baseEntry(key); return (e && e.label) || key; }
+  return key;
+}
+/* 이름이 다른 카테고리와 겹치는지 (자기 자신은 빼고) */
+function catNameTaken(name, exceptKey){
+  return allCats().some(function(c){ return c.key !== exceptKey && (c.key === name || c.label === name); });
+}
+function customCats(){ return ((state && state.cats) || []).filter(function(c){ return !c.base; }); }
 var CAT_NONE = '기타';
 /* 기본 + 사용자 카테고리 목록 [{key, color, id?}] */
 function allCats(){
-  var out = CATS.slice(0, 4);
-  ((state && state.cats) || []).forEach(function(c){ out.push({key:c.name, color:c.color, id:c.id}); });
-  out.push(CATS[4]);                /* '기타'는 항상 맨 끝 */
+  var base = function(c){ return {key:c.key, label:catLabel(c.key), color:baseColorOverride(c.key) || c.color, base:true}; };
+  var out = CATS.slice(0, 4).map(base);
+  customCats().forEach(function(c){ out.push({key:c.name, label:c.name, color:c.color, id:c.id}); });
+  out.push(base(CATS[4]));          /* '기타'는 항상 맨 끝 */
   return out;
 }
 function catColor(name){
-  if(CAT_COLOR[name]) return CAT_COLOR[name];
+  if(CAT_COLOR[name]) return baseColorOverride(name) || CAT_COLOR[name];
   var found = null;
-  ((state && state.cats) || []).forEach(function(c){ if(c.name === name) found = c.color; });
-  return found || CAT_COLOR[CAT_NONE];
+  customCats().forEach(function(c){ if(c.name === name) found = c.color; });
+  return found || catColor(CAT_NONE);
+}
+/* 카테고리 이름·색 바꾸기 → 성공하면 새 key, 실패하면 null
+   · 기본 카테고리: 속 이름(key)은 그대로 두고 보이는 이름(label)·색만 따로 저장 → 항목·가족 공유가 안 깨짐
+     원래 이름·원래 색으로 돌아오면 따로 저장한 기록은 지움
+   · 직접 만든 카테고리: 이름을 바꾸면 그 카테고리의 항목들도 새 이름으로 옮김 */
+function updateCategory(key, newName, color){
+  var nm = String(newName || '').trim().slice(0, 12);
+  if(!nm){ toast('카테고리 이름을 입력해 주세요'); return null; }
+  if(nm === '__new__' || catNameTaken(nm, key)){ toast('이미 있는 카테고리 이름이에요'); return null; }
+  if(!/^#[0-9A-Fa-f]{6}$/.test(color)) color = catColor(key);
+  if(!state.cats) state.cats = [];
+  if(CAT_COLOR[key]){
+    state.cats = state.cats.filter(function(c){ return !(c.base && c.name === key); });
+    var sameColor = color.toUpperCase() === CAT_COLOR[key].toUpperCase();
+    if(nm !== key || !sameColor){
+      var e = {id:'b:' + key, name:key, base:true};
+      if(!sameColor) e.color = color;
+      if(nm !== key) e.label = nm;
+      state.cats.push(e);
+    }
+    save(); renderAll();
+    return key;
+  }
+  state.cats.forEach(function(c){ if(!c.base && c.name === key){ c.name = nm; c.color = color; } });
+  if(nm !== key){
+    state.items.forEach(function(it){ if(it.cat === key) it.cat = nm; });
+    if(filter === key) filter = nm;
+  }
+  save(); renderAll();
+  return nm;
 }
 function catExists(name){
   if(CAT_COLOR[name]) return true;
   return ((state && state.cats) || []).some(function(c){ return c.name === name; });
 }
 function nextCustomColor(){
-  var used = ((state && state.cats) || []).map(function(c){ return c.color; });
+  var used = customCats().map(function(c){ return c.color; });
   for(var i = 0; i < CUSTOM_COLORS.length; i++){ if(used.indexOf(CUSTOM_COLORS[i]) < 0) return CUSTOM_COLORS[i]; }
   return CUSTOM_COLORS[used.length % CUSTOM_COLORS.length];
 }
@@ -783,13 +835,26 @@ function normalize(raw){
   if(raw && typeof raw === 'object'){
     /* 사용자 카테고리: 이름 중복·기본 이름과 겹치는 것은 버림 */
     var catSeen = {};
+    var baseSeen = {}, catSeenN = 0;
     (Array.isArray(raw.cats) ? raw.cats : []).forEach(function(c){
       if(!c || typeof c !== 'object') return;
       var nm = String(c.name==null?'':c.name).trim().slice(0, 12);
+      /* 기본 카테고리 색 바꾼 기록 */
+      if(c.base === true){
+        if(!CAT_COLOR[nm] || baseSeen[nm]) return;
+        var be = {id:'b:' + nm, name:nm, base:true};
+        if(/^#[0-9A-Fa-f]{6}$/.test(String(c.color||''))) be.color = String(c.color);
+        var lb = String(c.label==null?'':c.label).trim().slice(0, 12);
+        if(lb && lb !== nm) be.label = lb;
+        if(!be.color && !be.label) return;
+        baseSeen[nm] = 1;
+        out.cats.push(be);
+        return;
+      }
       var cid = String(c.id || ('c' + uid()));
       if(!nm || catOk[nm] || catSeen[cid]) return;
       catSeen[cid] = 1; catOk[nm] = 1;
-      var col = /^#[0-9A-Fa-f]{6}$/.test(String(c.color||'')) ? String(c.color) : CUSTOM_COLORS[out.cats.length % CUSTOM_COLORS.length];
+      var col = /^#[0-9A-Fa-f]{6}$/.test(String(c.color||'')) ? String(c.color) : CUSTOM_COLORS[catSeenN++ % CUSTOM_COLORS.length];
       out.cats.push({id:cid, name:nm, color:col});
     });
     var items = Array.isArray(raw.items) ? raw.items : [];
@@ -1084,7 +1149,7 @@ function renderChips(){
   var need = activeItems().filter(function(it){ var k = statusOf(it).key; return k === 'soon' || k === 'over' || k === 'check' || k === 'today'; }).length;
   var html = '';
   list.forEach(function(c){
-    var label = (c === '갈 때 된 것만' && need) ? (c + ' ' + need) : c;
+    var label = (c === '갈 때 된 것만' && need) ? (c + ' ' + need) : (c === '전체' || c === '갈 때 된 것만' ? c : catLabel(c));
     var cls = 'chip' + (filter === c ? ' on' : (c === '갈 때 된 것만' && need ? ' pri' : ''));
     html += '<button class="' + cls + '" data-chip="' + esc(c) + '">' + esc(label) + '</button>';
   });
@@ -1139,7 +1204,7 @@ function renderItems(){
     var st = statusOf(it);
     var meta = STATUS_META[st.key];
     var recCount = state.records.filter(function(r){ return r.itemId === it.id; }).length;
-    var metaLine = esc(it.cat) + '<span class="sep">·</span>' + esc(cycleText(it));
+    var metaLine = esc(catLabel(it.cat)) + '<span class="sep">·</span>' + esc(cycleText(it));
     if(st.last){
       metaLine += '<span class="sep">·</span>마지막 ' + esc(fmtDate(st.last.date));
     } else {
@@ -1201,7 +1266,7 @@ function renderArchive(){
     arr.forEach(function(it){
       var last = lastDoneOf(it.id, todayStr());
       html += '<div class="arch-row"><span class="cat-dot" style="margin-top:0;background:' + catColor(it.cat) + '"></span>'
-        + '<div class="nm">' + esc(it.name) + '<div class="sub">' + esc(it.cat) + ' · 기록 ' + recordCountOf(it.id) + '건'
+        + '<div class="nm">' + esc(it.name) + '<div class="sub">' + esc(catLabel(it.cat)) + ' · 기록 ' + recordCountOf(it.id) + '건'
         + (last ? ' · 마지막 ' + esc(fmtDate(last.date)) : '') + '</div></div>'
         + '<button class="mini-btn" data-unhide="' + esc(it.id) + '">꺼내기</button></div>';
     });
@@ -1312,7 +1377,7 @@ function renderCal(){
       var it = itemById(r.itemId);
       return it && it.cat === c.key;
     });
-    return used ? '<span style="margin-right:10px"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + c.color + ';margin-right:4px"></i>' + esc(c.key) + '</span>' : '';
+    return used ? '<span style="margin-right:10px"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + c.color + ';margin-right:4px"></i>' + esc(c.label) + '</span>' : '';
   }).join('');
   $('calLegend').innerHTML = (leg || '기록을 남기면 여기에 색 범례가 생겨요.')
     + (state.records.some(function(r){ return isPlan(r, today); }) ? ' <span style="color:var(--muted)">· 속이 빈 점 = 예약</span>' : '');
@@ -1511,7 +1576,7 @@ function renderStat(){
     var topC = byCat[cats[0]];
     cats.forEach(function(ck){
       var pct = Math.round(byCat[ck] / total * 100);
-      ch += '<div class="hbar-row"><div class="hbar-top"><span class="nm"><span class="cat-dot" style="margin-top:0;background:' + catColor(ck) + '"></span>' + esc(ck) + '</span>'
+      ch += '<div class="hbar-row"><div class="hbar-top"><span class="nm"><span class="cat-dot" style="margin-top:0;background:' + catColor(ck) + '"></span>' + esc(catLabel(ck)) + '</span>'
         + '<span class="amt">' + won(byCat[ck]) + '</span><span class="pct">' + pct + '%</span></div>'
         + '<div class="hbar"><i style="width:' + Math.max(2, Math.round(byCat[ck] / topC * 100)) + '%;background:' + catColor(ck) + '"></i></div></div>';
     });
@@ -1748,7 +1813,7 @@ function fillItemSelect(sel, includeId){
   var html = '';
   state.items.forEach(function(it){
     if(it.hidden && it.id !== includeId) return;     /* 보관함 항목은 고칠 때만 보여 줌 */
-    html += '<option value="' + esc(it.id) + '">' + esc(it.name) + ' (' + esc(it.cat) + ')</option>';
+    html += '<option value="' + esc(it.id) + '">' + esc(it.name) + ' (' + esc(catLabel(it.cat)) + ')</option>';
   });
   sel.innerHTML = html;
 }
@@ -1993,8 +2058,8 @@ function paintSwatches(hostId, cur){
   var host = $(hostId);
   if(!host) return;
   var html = '';
-  CUSTOM_COLORS.forEach(function(c){
-    html += '<button type="button" class="swatch' + (c === cur ? ' on' : '') + '" data-color="' + c + '" style="background:' + c + '" aria-label="색 ' + c + '"></button>';
+  COLOR_CHOICES.forEach(function(c){
+    html += '<button type="button" class="swatch' + (cur && c.toUpperCase() === String(cur).toUpperCase() ? ' on' : '') + '" data-color="' + c + '" style="background:' + c + '" aria-label="색 ' + c + '"></button>';
   });
   host.innerHTML = html;
 }
@@ -2002,21 +2067,43 @@ function paintSwatches(hostId, cur){
 function addCustomCat(rawName, color){
   var nm = String(rawName||'').trim().slice(0, 12);
   if(!nm){ toast('새 카테고리 이름을 입력해 주세요'); return null; }
-  if(nm === '__new__' || catExists(nm)){ toast('이미 있는 카테고리 이름이에요'); return null; }
+  if(nm === '__new__' || catExists(nm) || catNameTaken(nm, null)){ toast('이미 있는 카테고리 이름이에요'); return null; }
   if(!state.cats) state.cats = [];
   state.cats.push({id:'c' + uid(), name:nm, color:color || nextCustomColor()});
   return nm;
 }
+var catEditKey = null;            /* 설정에서 [수정]을 펼친 카테고리 */
+var catEditColor = null;          /* 수정 칸에서 고른 색 (저장 전) */
 function renderCatList(){
   var host = $('catList');
   if(!host) return;
   var html = '';
   allCats().forEach(function(c){
     var n = state.items.filter(function(it){ return it.cat === c.key; }).length;
-    html += '<div class="cat-row"><span class="cat-dot" style="margin-top:0;background:' + c.color + '"></span>'
-      + '<span class="nm">' + esc(c.key) + ' <span class="sub">· 항목 ' + n + '개' + (c.id ? '' : ' · 기본') + '</span></span>'
-      + (c.id ? '<button class="mini-btn danger" data-catdel="' + esc(c.id) + '">삭제</button>' : '')
+    var open = catEditKey === c.key;
+    html += '<div class="cat-row' + (open ? ' open' : '') + '">'
+      + '<span class="cat-dot" style="margin-top:0;width:14px;height:14px;flex:0 0 14px;background:' + c.color + '"></span>'
+      + '<span class="nm">' + esc(c.label) + ' <span class="sub">· 항목 ' + n + '개</span></span>'
+      + '<button class="mini-btn" data-catedit="' + esc(c.key) + '">' + (open ? '닫기' : '수정') + '</button>'
       + '</div>';
+    if(open){
+      var pick = catEditColor || c.color;
+      html += '<div class="cat-palette">'
+        + '<label class="f-lbl" style="margin-top:0">이름</label>'
+        + '<input class="f-in" id="catEditName" type="text" maxlength="12" value="' + esc(c.label) + '">'
+        + '<label class="f-lbl">색</label>'
+        + '<div class="swatches" data-catpal="' + esc(c.key) + '">'
+        + COLOR_CHOICES.map(function(col){
+            return '<button type="button" class="swatch' + (col.toUpperCase() === pick.toUpperCase() ? ' on' : '') + '" data-pick="' + col + '" style="background:' + col + '" aria-label="색 ' + col + '"></button>';
+          }).join('')
+        + '</div>'
+        + '<div class="f-row" style="margin-top:12px">'
+        +   (c.id ? '<button class="set-btn danger" data-catdel="' + esc(c.id) + '" style="flex:0 0 84px">삭제</button>' : '')
+        +   '<button class="set-btn primary" data-catsave="' + esc(c.key) + '">저장</button>'
+        + '</div>'
+        + (c.id ? '' : '<div class="set-note" style="margin-top:6px">기본 카테고리는 지울 수 없어요 · 이름과 색만 바꿀 수 있어요</div>')
+        + '</div>';
+    }
   });
   host.innerHTML = html;
   if(!setCatColor) setCatColor = nextCustomColor();
@@ -2051,7 +2138,7 @@ function openItemSheet(itemId){
   var catSel = $('itCat');
   var html = '';
   allCats().forEach(function(c){
-    html += '<option value="' + esc(c.key) + '">' + esc(c.key) + '</option>';
+    html += '<option value="' + esc(c.key) + '">' + esc(c.label) + '</option>';
   });
   html += '<option value="__new__">＋ 새 카테고리 만들기…</option>';
   catSel.innerHTML = html;
@@ -2136,7 +2223,7 @@ function openDetail(itemId){
   $('dtName').textContent = it.name;
   var st = statusOf(it);
   var recs = recordsDesc().filter(function(r){ return r.itemId === itemId; });
-  var meta = esc(it.cat) + ' · ' + esc(cycleText(it)) + ' · 기록 ' + recs.length + '건';
+  var meta = esc(catLabel(it.cat)) + ' · ' + esc(cycleText(it)) + ' · 기록 ' + recs.length + '건';
   if(st.last) meta += ' · 마지막 ' + fmtDate(st.last.date) + ' (' + STATUS_META[st.key].text + ')';
   if(st.planned) meta += ' · 예약 ' + fmtDate(st.planned.date) + ' (D-' + st.planIn + ')';
   $('dtMeta').textContent = meta;
@@ -3032,7 +3119,32 @@ function bind(){
   });
   $('catList').addEventListener('click', function(e){
     var d = e.target.closest('[data-catdel]');
-    if(d) deleteCustomCat(d.dataset.catdel);
+    if(d){ deleteCustomCat(d.dataset.catdel); return; }
+    var ce = e.target.closest('[data-catedit]');
+    if(ce){
+      catEditKey = (catEditKey === ce.dataset.catedit) ? null : ce.dataset.catedit;
+      catEditColor = null;
+      renderCatList();
+      return;
+    }
+    var pk = e.target.closest('[data-pick]');
+    if(pk && pk.closest('[data-catpal]')){
+      /* 색은 [저장]을 눌러야 적용 — 고른 표시만 바꿈 (입력 중인 이름은 그대로) */
+      catEditColor = pk.dataset.pick;
+      pk.parentNode.querySelectorAll('.swatch').forEach(function(b){ b.classList.toggle('on', b === pk); });
+      return;
+    }
+    var sv = e.target.closest('[data-catsave]');
+    if(sv){
+      var key = sv.dataset.catsave;
+      var oldLabel = catLabel(key);
+      var res = updateCategory(key, $('catEditName').value, catEditColor || catColor(key));
+      if(res == null) return;
+      catEditKey = null; catEditColor = null;
+      renderCatList();
+      toast('"' + catLabel(res) + '" 카테고리를 저장했어요 🏷' + (catLabel(res) !== oldLabel ? ' (' + oldLabel + ' → ' + catLabel(res) + ')' : ''));
+      return;
+    }
   });
 
   /* 💸 꾸밈비 */
