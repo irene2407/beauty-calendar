@@ -651,6 +651,8 @@ function baseEntry(name){
   return hit;
 }
 function baseColorOverride(name){ var e = baseEntry(name); return (e && e.color) || null; }
+/* 지운 기본 카테고리인지 ('기타'는 항목이 옮겨 갈 자리라 지울 수 없음) */
+function isBaseRemoved(name){ var e = baseEntry(name); return !!(e && e.removed && name !== CAT_NONE); }
 /* 화면에 보이는 카테고리 이름 (기본 카테고리는 바꾼 이름이 있으면 그 이름) */
 function catLabel(key){
   if(CAT_COLOR[key]){ var e = baseEntry(key); return (e && e.label) || key; }
@@ -665,7 +667,7 @@ var CAT_NONE = '기타';
 /* 기본 + 사용자 카테고리 목록 [{key, color, id?}] */
 function allCats(){
   var base = function(c){ return {key:c.key, label:catLabel(c.key), color:baseColorOverride(c.key) || c.color, base:true}; };
-  var out = CATS.slice(0, 4).map(base);
+  var out = CATS.slice(0, 4).filter(function(c){ return !isBaseRemoved(c.key); }).map(base);
   customCats().forEach(function(c){ out.push({key:c.name, label:c.name, color:c.color, id:c.id}); });
   out.push(base(CATS[4]));          /* '기타'는 항상 맨 끝 */
   return out;
@@ -707,8 +709,8 @@ function updateCategory(key, newName, color){
   return nm;
 }
 function catExists(name){
-  if(CAT_COLOR[name]) return true;
-  return ((state && state.cats) || []).some(function(c){ return c.name === name; });
+  if(CAT_COLOR[name]) return !isBaseRemoved(name);
+  return customCats().some(function(c){ return c.name === name; });
 }
 function nextCustomColor(){
   var used = customCats().map(function(c){ return c.color; });
@@ -846,13 +848,14 @@ function normalize(raw){
         if(/^#[0-9A-Fa-f]{6}$/.test(String(c.color||''))) be.color = String(c.color);
         var lb = String(c.label==null?'':c.label).trim().slice(0, 12);
         if(lb && lb !== nm) be.label = lb;
-        if(!be.color && !be.label) return;
+        if(c.removed === true && nm !== '기타'){ be = {id:'b:' + nm, name:nm, base:true, removed:true}; delete catOk[nm]; }
+        if(!be.color && !be.label && !be.removed) return;
         baseSeen[nm] = 1;
         out.cats.push(be);
         return;
       }
       var cid = String(c.id || ('c' + uid()));
-      if(!nm || catOk[nm] || catSeen[cid]) return;
+      if(!nm || catOk[nm] || CAT_COLOR[nm] || catSeen[cid]) return;   /* 기본 카테고리 이름은 직접 만든 카테고리로 못 씀 */
       catSeen[cid] = 1; catOk[nm] = 1;
       var col = /^#[0-9A-Fa-f]{6}$/.test(String(c.color||'')) ? String(c.color) : CUSTOM_COLORS[catSeenN++ % CUSTOM_COLORS.length];
       out.cats.push({id:cid, name:nm, color:col});
@@ -2069,6 +2072,12 @@ function addCustomCat(rawName, color){
   if(!nm){ toast('새 카테고리 이름을 입력해 주세요'); return null; }
   if(nm === '__new__' || catExists(nm) || catNameTaken(nm, null)){ toast('이미 있는 카테고리 이름이에요'); return null; }
   if(!state.cats) state.cats = [];
+  /* 지웠던 기본 카테고리 이름이면 새로 만들지 않고 그 카테고리를 되살림 (고른 색으로) */
+  if(CAT_COLOR[nm]){
+    state.cats = state.cats.filter(function(c){ return !(c.base && c.name === nm); });
+    if(color && color.toUpperCase() !== CAT_COLOR[nm].toUpperCase()) state.cats.push({id:'b:' + nm, name:nm, color:color, base:true});
+    return nm;
+  }
   state.cats.push({id:'c' + uid(), name:nm, color:color || nextCustomColor()});
   return nm;
 }
@@ -2098,10 +2107,11 @@ function renderCatList(){
           }).join('')
         + '</div>'
         + '<div class="f-row" style="margin-top:12px">'
-        +   (c.id ? '<button class="set-btn danger" data-catdel="' + esc(c.id) + '" style="flex:0 0 84px">삭제</button>' : '')
+        +   (c.id ? '<button class="set-btn danger" data-catdel="' + esc(c.id) + '" style="flex:0 0 84px">삭제</button>'
+              : (c.key !== CAT_NONE ? '<button class="set-btn danger" data-catdelbase="' + esc(c.key) + '" style="flex:0 0 84px">삭제</button>' : ''))
         +   '<button class="set-btn primary" data-catsave="' + esc(c.key) + '">저장</button>'
         + '</div>'
-        + (c.id ? '' : '<div class="set-note" style="margin-top:6px">기본 카테고리는 지울 수 없어요 · 이름과 색만 바꿀 수 있어요</div>')
+        + (c.key === CAT_NONE ? '<div class="set-note" style="margin-top:6px">카테고리를 지우면 항목이 옮겨 갈 자리라서 지울 수 없어요 · 이름과 색은 바꿀 수 있어요</div>' : '')
         + '</div>';
     }
   });
@@ -2109,12 +2119,36 @@ function renderCatList(){
   if(!setCatColor) setCatColor = nextCustomColor();
   paintSwatches('setCatSw', setCatColor);
 }
+/* 기본 카테고리 지우기 ('기타' 빼고) — 항목은 '기타'로, 되돌리기 가능 */
+function deleteBaseCat(key){
+  if(!CAT_COLOR[key] || key === CAT_NONE) return;
+  var label = catLabel(key);
+  var n = state.items.filter(function(it){ return it.cat === key; }).length;
+  askConfirm('카테고리 삭제', '"' + label + '" 카테고리를 지울까요?' + (n ? '\n이 카테고리의 항목 ' + n + '개는 \'' + catLabel(CAT_NONE) + '\'(으)로 옮겨져요. 기록은 그대로예요.' : ''), '삭제', function(){
+    var prev = baseEntry(key) ? JSON.parse(JSON.stringify(baseEntry(key))) : null;
+    var moved = [];
+    state.items.forEach(function(it){ if(it.cat === key){ it.cat = CAT_NONE; moved.push(it.id); } });
+    state.cats = (state.cats || []).filter(function(c){ return !(c.base && c.name === key); });
+    state.cats.push({id:'b:' + key, name:key, base:true, removed:true});
+    if(filter === key) filter = '전체';
+    catEditKey = null;
+    save();
+    renderAll();
+    undoSnack('"' + label + '" 카테고리를 지웠어요', function(){
+      state.cats = state.cats.filter(function(c){ return !(c.base && c.name === key); });
+      if(prev) state.cats.push(prev);
+      state.items.forEach(function(it){ if(moved.indexOf(it.id) >= 0 && it.cat === CAT_NONE) it.cat = key; });
+      save(); renderAll();
+      toast('되돌렸어요 ✓');
+    });
+  });
+}
 function deleteCustomCat(cid){
   var cat = null;
   (state.cats||[]).forEach(function(c){ if(c.id === cid) cat = c; });
   if(!cat) return;
   var n = state.items.filter(function(it){ return it.cat === cat.name; }).length;
-  askConfirm('카테고리 삭제', '"' + cat.name + '" 카테고리를 지울까요?' + (n ? '\n이 카테고리의 항목 ' + n + '개는 \'기타\'로 옮겨져요. 기록은 그대로예요.' : ''), '삭제', function(){
+  askConfirm('카테고리 삭제', '"' + cat.name + '" 카테고리를 지울까요?' + (n ? '\n이 카테고리의 항목 ' + n + '개는 \'' + catLabel(CAT_NONE) + '\'(으)로 옮겨져요. 기록은 그대로예요.' : ''), '삭제', function(){
     var catCopy = JSON.parse(JSON.stringify(cat));
     var moved = [];
     state.items.forEach(function(it){ if(it.cat === cat.name){ it.cat = '기타'; moved.push(it.id); } });
@@ -3120,6 +3154,8 @@ function bind(){
   $('catList').addEventListener('click', function(e){
     var d = e.target.closest('[data-catdel]');
     if(d){ deleteCustomCat(d.dataset.catdel); return; }
+    var db = e.target.closest('[data-catdelbase]');
+    if(db){ deleteBaseCat(db.dataset.catdelbase); return; }
     var ce = e.target.closest('[data-catedit]');
     if(ce){
       catEditKey = (catEditKey === ce.dataset.catedit) ? null : ce.dataset.catedit;
