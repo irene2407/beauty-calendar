@@ -653,6 +653,32 @@ function baseEntry(name){
 function baseColorOverride(name){ var e = baseEntry(name); return (e && e.color) || null; }
 /* 지운 기본 카테고리인지 ('기타'는 항목이 옮겨 갈 자리라 지울 수 없음) */
 function isBaseRemoved(name){ var e = baseEntry(name); return !!(e && e.removed && name !== CAT_NONE); }
+/* 지운 기본 카테고리 중 이 이름(원래 이름 또는 지우기 전 바꿔 둔 이름)을 가진 것 → 속 이름, 없으면 null */
+function findRemovedBase(name){
+  var hit = null;
+  CATS.forEach(function(c){
+    if(hit || !isBaseRemoved(c.key)) return;
+    var e = baseEntry(c.key);
+    if(c.key === name || (e && e.label === name)) hit = c.key;
+  });
+  return hit;
+}
+/* 지운 기본 카테고리 되살리기 (지우기 전 이름·색 그대로, color를 주면 그 색으로) */
+function restoreBase(key, color){
+  var e = baseEntry(key);
+  state.cats = state.cats.filter(function(c){ return !(c.base && c.name === key); });
+  var ne = {id:'b:' + key, name:key, base:true};
+  if(e && e.label) ne.label = e.label;
+  var col = color || (e && e.color);
+  if(col && col.toUpperCase() !== CAT_COLOR[key].toUpperCase()) ne.color = col;
+  if(ne.label || ne.color) state.cats.push(ne);
+}
+/* 기본 카테고리 6개의 원래 이름·지운 카테고리의 바꿔 둔 이름은 다른 카테고리 이름으로 못 씀 (되살릴 자리) */
+function reservedFor(name, exceptKey){
+  if(CAT_COLOR[name] && name !== exceptKey) return name;
+  var r = findRemovedBase(name);
+  return (r && r !== exceptKey) ? r : null;
+}
 /* 화면에 보이는 카테고리 이름 (기본 카테고리는 바꾼 이름이 있으면 그 이름) */
 function catLabel(key){
   if(CAT_COLOR[key]){ var e = baseEntry(key); return (e && e.label) || key; }
@@ -688,6 +714,22 @@ function updateCategory(key, newName, color){
   if(nm === '__new__' || catNameTaken(nm, key)){ toast('이미 있는 카테고리 이름이에요'); return null; }
   if(!/^#[0-9A-Fa-f]{6}$/.test(color)) color = catColor(key);
   if(!state.cats) state.cats = [];
+  var rsv = reservedFor(nm, key);
+  if(rsv){
+    if(CAT_COLOR[key]){
+      /* 기본 카테고리의 보이는 이름으로는 다른 기본 카테고리 이름을 못 씀 */
+      toast('"' + nm + '"은(는) 지운 기본 카테고리를 되살릴 때 쓰는 이름이라 쓸 수 없어요');
+      return null;
+    }
+    /* 직접 만든 카테고리를 지운 기본 카테고리 이름으로 바꾸면 → 그 기본 카테고리를 되살려서 항목을 옮기고 합침 */
+    restoreBase(rsv, color);
+    state.items.forEach(function(it){ if(it.cat === key) it.cat = rsv; });
+    state.cats = state.cats.filter(function(c){ return c.base || c.name !== key; });
+    if(filter === key) filter = rsv;
+    save(); renderAll();
+    toast('지웠던 "' + catLabel(rsv) + '" 카테고리를 되살려서 합쳤어요 🏷');
+    return rsv;
+  }
   if(CAT_COLOR[key]){
     state.cats = state.cats.filter(function(c){ return !(c.base && c.name === key); });
     var sameColor = color.toUpperCase() === CAT_COLOR[key].toUpperCase();
@@ -848,7 +890,7 @@ function normalize(raw){
         if(/^#[0-9A-Fa-f]{6}$/.test(String(c.color||''))) be.color = String(c.color);
         var lb = String(c.label==null?'':c.label).trim().slice(0, 12);
         if(lb && lb !== nm) be.label = lb;
-        if(c.removed === true && nm !== '기타'){ be = {id:'b:' + nm, name:nm, base:true, removed:true}; delete catOk[nm]; }
+        if(c.removed === true && nm !== '기타'){ be.removed = true; delete catOk[nm]; }
         if(!be.color && !be.label && !be.removed) return;
         baseSeen[nm] = 1;
         out.cats.push(be);
@@ -2067,16 +2109,20 @@ function paintSwatches(hostId, cur){
   host.innerHTML = html;
 }
 /* 이름 확인 후 카테고리 추가 → 성공하면 이름, 실패하면 null (저장은 호출한 쪽에서) */
+var lastCatRestored = false;      /* 방금 추가가 '지운 기본 카테고리 되살리기'였는지 (안내 문구용) */
 function addCustomCat(rawName, color){
+  lastCatRestored = false;
   var nm = String(rawName||'').trim().slice(0, 12);
   if(!nm){ toast('새 카테고리 이름을 입력해 주세요'); return null; }
   if(nm === '__new__' || catExists(nm) || catNameTaken(nm, null)){ toast('이미 있는 카테고리 이름이에요'); return null; }
   if(!state.cats) state.cats = [];
-  /* 지웠던 기본 카테고리 이름이면 새로 만들지 않고 그 카테고리를 되살림 (고른 색으로) */
-  if(CAT_COLOR[nm]){
-    state.cats = state.cats.filter(function(c){ return !(c.base && c.name === nm); });
-    if(color && color.toUpperCase() !== CAT_COLOR[nm].toUpperCase()) state.cats.push({id:'b:' + nm, name:nm, color:color, base:true});
-    return nm;
+  /* 지웠던 기본 카테고리(원래 이름 또는 지우기 전 바꿔 둔 이름)면 새로 만들지 않고 그 카테고리를 되살림
+     — 이름·색은 지우기 전 그대로 */
+  var rb = findRemovedBase(nm);
+  lastCatRestored = !!rb;
+  if(rb){
+    restoreBase(rb, null);
+    return rb;
   }
   state.cats.push({id:'c' + uid(), name:nm, color:color || nextCustomColor()});
   return nm;
@@ -2129,7 +2175,10 @@ function deleteBaseCat(key){
     var moved = [];
     state.items.forEach(function(it){ if(it.cat === key){ it.cat = CAT_NONE; moved.push(it.id); } });
     state.cats = (state.cats || []).filter(function(c){ return !(c.base && c.name === key); });
-    state.cats.push({id:'b:' + key, name:key, base:true, removed:true});
+    var rm = {id:'b:' + key, name:key, base:true, removed:true};     /* 바꿔 둔 이름·색은 기억 (되살릴 때 씀) */
+    if(prev && prev.label) rm.label = prev.label;
+    if(prev && prev.color) rm.color = prev.color;
+    state.cats.push(rm);
     if(filter === key) filter = '전체';
     catEditKey = null;
     save();
@@ -3149,7 +3198,7 @@ function bind(){
     $('setCatName').value = '';
     setCatColor = nextCustomColor();
     renderAll();
-    toast('"' + nm + '" 카테고리를 만들었어요 🏷');
+    toast(lastCatRestored ? ('지웠던 "' + catLabel(nm) + '" 카테고리를 되살렸어요 🏷') : ('"' + nm + '" 카테고리를 만들었어요 🏷'));
   });
   $('catList').addEventListener('click', function(e){
     var d = e.target.closest('[data-catdel]');
@@ -3178,6 +3227,7 @@ function bind(){
       if(res == null) return;
       catEditKey = null; catEditColor = null;
       renderCatList();
+      if(CAT_COLOR[res] && !CAT_COLOR[key]) return;   /* 지운 기본 카테고리와 합친 경우: 그 안내를 그대로 둠 */
       toast('"' + catLabel(res) + '" 카테고리를 저장했어요 🏷' + (catLabel(res) !== oldLabel ? ' (' + oldLabel + ' → ' + catLabel(res) + ')' : ''));
       return;
     }
